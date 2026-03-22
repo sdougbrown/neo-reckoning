@@ -19,6 +19,9 @@ export type {
   YearGridConfig,
   YearMonth,
   YearDay,
+  Conflict,
+  FreeSlot,
+  ScheduleScore,
 } from './types.js';
 
 // Core classes
@@ -26,6 +29,9 @@ export { RangeEvaluator } from './evaluator.js';
 export { CalendarGrid } from './grid.js';
 export { TimelineGrid, computeEventPositions } from './timeline.js';
 export { YearGrid } from './yearGrid.js';
+
+// Schedule scoring
+export { scoreSchedule } from './scoring.js';
 
 // Display type resolution
 export { resolveDisplayType } from './displayType.js';

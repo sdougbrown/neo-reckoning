@@ -4,3 +4,6 @@ export { useCalendarEvents } from './useCalendarEvents.js';
 export { useDayDetail } from './useDayDetail.js';
 export { useTimeline } from './useTimeline.js';
 export { useSpans } from './useSpans.js';
+export { useConflicts } from './useConflicts.js';
+export { useFreeSlots } from './useFreeSlots.js';
+export { useScheduleScore } from './useScheduleScore.js';

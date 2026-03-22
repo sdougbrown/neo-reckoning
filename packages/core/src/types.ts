@@ -67,6 +67,12 @@ export interface DateRange {
 
   /** Display hint from the API. Neo-reckoning passes this through, SPA interprets it. */
   displayType?: DisplayType;
+
+  /**
+   * Flexibility score (0-5). 0=locked, 1-5=increasingly flexible.
+   * Neo-reckoning passes this through — agent-facing code interprets it.
+   */
+  flexibility?: number;
 }
 
 /**
@@ -88,6 +94,21 @@ export interface Occurrence {
   allDay: boolean;
   /** Display type hint passed through from the source DateRange */
   displayType?: string;
+}
+
+/**
+ * A free (unoccupied) time slot within a single day.
+ * Produced by RangeEvaluator.findFreeSlots().
+ */
+export interface FreeSlot {
+  /** Date in YYYY-MM-DD format */
+  date: string;
+  /** Start time in HH:mm format */
+  startTime: string;
+  /** End time in HH:mm format */
+  endTime: string;
+  /** Duration in minutes */
+  duration: number;
 }
 
 /**
@@ -322,4 +343,37 @@ export interface YearDay {
   rangeCount: number;
   /** IDs of matching ranges (SPA maps these to colors) */
   rangeIds: string[];
+}
+
+/**
+ * Score summarising the quality of a schedule across a date window.
+ */
+export interface ScheduleScore {
+  /** Total conflicts across the window */
+  conflicts: number;
+  /** Total minutes of free time within working hours across the window */
+  freeMinutes: number;
+  /** Number of uninterrupted focus blocks >= focusBlockMinutes */
+  focusBlocks: number;
+  /** Number of context switches (transitions between different ranges) per day, averaged */
+  avgContextSwitches: number;
+  /** Total days with at least one conflict */
+  conflictDays: number;
+}
+
+/**
+ * A time-level conflict between two ranges on a specific date.
+ * Only timed ranges can conflict — two all-day ranges stack, they don't conflict.
+ */
+export interface Conflict {
+  /** First conflicting range */
+  rangeA: { id: string; label: string };
+  /** Second conflicting range */
+  rangeB: { id: string; label: string };
+  /** Date of the conflict (YYYY-MM-DD) */
+  date: string;
+  /** Start of the overlap window (HH:mm), null for all-day */
+  overlapStart: string | null;
+  /** End of the overlap window (HH:mm), null for all-day */
+  overlapEnd: string | null;
 }

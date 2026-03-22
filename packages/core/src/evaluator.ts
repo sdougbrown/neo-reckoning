@@ -1,4 +1,4 @@
-import type { DateRange, Occurrence, TimeSlot, SpanInfo } from './types.js';
+import type { DateRange, Occurrence, TimeSlot, SpanInfo, Conflict, FreeSlot } from './types.js';
 import {
   parseDate,
   getDayOfWeek,
@@ -8,6 +8,7 @@ import {
   parseTime,
   formatTime,
   timeToMinutes,
+  minutesToTime,
   addMinutes,
   convertTime,
   formatDate,
@@ -434,6 +435,220 @@ export class RangeEvaluator {
     });
 
     return results;
+  }
+
+  /**
+   * Find time-level conflicts among ranges on a single date.
+   * Two timed ranges that overlap in time are a conflict.
+   * Two all-day ranges, or an all-day + timed range, are NOT conflicts.
+   */
+  findConflicts(ranges: DateRange[], date: string): Conflict[] {
+    // Collect timed slots from all ranges that match this date
+    interface SlotWithRange {
+      rangeId: string;
+      label: string;
+      startMinutes: number;
+      endMinutes: number;
+    }
+
+    const slots: SlotWithRange[] = [];
+
+    for (const range of ranges) {
+      if (!this.isDateInRange(date, range)) continue;
+      if (!this.hasTimeFields(range)) continue; // all-day — skip
+
+      const timeSlots = this.getTimeSlots(date, range);
+      for (const slot of timeSlots) {
+        if (slot.endTime === null) continue; // point-in-time, no overlap possible
+        slots.push({
+          rangeId: range.id,
+          label: range.label,
+          startMinutes: timeToMinutes(slot.startTime),
+          endMinutes: timeToMinutes(slot.endTime),
+        });
+      }
+    }
+
+    // Sort by start time for sweep-line
+    slots.sort((a, b) => a.startMinutes - b.startMinutes || a.endMinutes - b.endMinutes);
+
+    // Sweep-line: find overlapping pairs from different ranges
+    const conflicts: Conflict[] = [];
+    const seen = new Set<string>();
+
+    for (let i = 0; i < slots.length; i++) {
+      for (let j = i + 1; j < slots.length; j++) {
+        // Since sorted by start, slots[j].startMinutes >= slots[i].startMinutes
+        if (slots[j].startMinutes >= slots[i].endMinutes) break; // no more overlaps with i
+
+        // Same range — not a conflict
+        if (slots[i].rangeId === slots[j].rangeId) continue;
+
+        // Deduplicate: use sorted pair key
+        const pairKey = slots[i].rangeId < slots[j].rangeId
+          ? `${slots[i].rangeId}|${slots[j].rangeId}`
+          : `${slots[j].rangeId}|${slots[i].rangeId}`;
+        if (seen.has(pairKey)) continue;
+        seen.add(pairKey);
+
+        const overlapStart = Math.max(slots[i].startMinutes, slots[j].startMinutes);
+        const overlapEnd = Math.min(slots[i].endMinutes, slots[j].endMinutes);
+
+        conflicts.push({
+          rangeA: { id: slots[i].rangeId, label: slots[i].label },
+          rangeB: { id: slots[j].rangeId, label: slots[j].label },
+          date,
+          overlapStart: formatTime(Math.floor(overlapStart / 60), overlapStart % 60),
+          overlapEnd: formatTime(Math.floor(overlapEnd / 60), overlapEnd % 60),
+        });
+      }
+    }
+
+    return conflicts;
+  }
+
+  /**
+   * Find time-level conflicts across a date window.
+   */
+  findConflictsInWindow(ranges: DateRange[], from: Date, to: Date): Conflict[] {
+    const fromStr = formatDate(from);
+    const toStr = formatDate(to);
+    const days = dateRange(fromStr, toStr);
+
+    const allConflicts: Conflict[] = [];
+    for (const day of days) {
+      const dayConflicts = this.findConflicts(ranges, day);
+      for (const c of dayConflicts) {
+        allConflicts.push(c);
+      }
+    }
+
+    return allConflicts;
+  }
+
+  /**
+   * Find free (unoccupied) time slots on a given date by analysing all ranges.
+   *
+   * Algorithm:
+   * 1. Expand all ranges for the date into time slots (using getTimeSlots)
+   * 2. Collect occupied intervals as [startMinutes, endMinutes] pairs
+   * 3. Merge overlapping intervals
+   * 4. Walk from dayStart to dayEnd — gaps between merged intervals are free slots
+   * 5. Filter by minDuration
+   */
+  findFreeSlots(
+    ranges: DateRange[],
+    date: string,
+    options?: {
+      minDuration?: number;
+      dayStart?: string;
+      dayEnd?: string;
+    },
+  ): FreeSlot[] {
+    const minDuration = options?.minDuration ?? 15;
+    const dayStartMin = timeToMinutes(options?.dayStart ?? '00:00');
+    const dayEndMin = timeToMinutes(options?.dayEnd ?? '24:00');
+
+    // Step 1-2: Collect all occupied intervals for this date
+    const occupied: [number, number][] = [];
+    for (const range of ranges) {
+      if (!this.isDateInRange(date, range)) continue;
+      // All-day ranges have no time slots — they don't block time
+      const slots = this.getTimeSlots(date, range);
+      for (const slot of slots) {
+        const start = timeToMinutes(slot.startTime);
+        const end = slot.endTime
+          ? timeToMinutes(slot.endTime)
+          : start + (slot.duration ?? 0);
+        if (end > start) {
+          occupied.push([start, end]);
+        }
+      }
+    }
+
+    // Step 3: Sort and merge overlapping intervals
+    occupied.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const merged: [number, number][] = [];
+    for (const interval of occupied) {
+      if (merged.length > 0 && interval[0] <= merged[merged.length - 1][1]) {
+        merged[merged.length - 1][1] = Math.max(merged[merged.length - 1][1], interval[1]);
+      } else {
+        merged.push([interval[0], interval[1]]);
+      }
+    }
+
+    // Step 4: Walk from dayStart to dayEnd, gaps are free slots
+    const freeSlots: FreeSlot[] = [];
+    let cursor = dayStartMin;
+
+    for (const [start, end] of merged) {
+      // Clamp interval to the search window
+      const clampedStart = Math.max(start, dayStartMin);
+      const clampedEnd = Math.min(end, dayEndMin);
+
+      if (clampedStart > cursor) {
+        const gapEnd = Math.min(clampedStart, dayEndMin);
+        const duration = gapEnd - cursor;
+        if (duration >= minDuration) {
+          freeSlots.push({
+            date,
+            startTime: minutesToTime(cursor),
+            endTime: minutesToTime(gapEnd),
+            duration,
+          });
+        }
+      }
+      cursor = Math.max(cursor, clampedEnd);
+    }
+
+    // Trailing gap after last occupied interval
+    if (cursor < dayEndMin) {
+      const duration = dayEndMin - cursor;
+      if (duration >= minDuration) {
+        freeSlots.push({
+          date,
+          startTime: minutesToTime(cursor),
+          endTime: minutesToTime(dayEndMin),
+          duration,
+        });
+      }
+    }
+
+    return freeSlots;
+  }
+
+  /**
+   * Find the next free slot of at least `duration` minutes, searching day by day
+   * from `from` to `to`.
+   */
+  findNextFreeSlot(
+    ranges: DateRange[],
+    from: Date,
+    to: Date,
+    duration: number,
+    options?: {
+      dayStart?: string;
+      dayEnd?: string;
+    },
+  ): FreeSlot | null {
+    const fromStr = formatDate(from);
+    const toStr = formatDate(to);
+    const days = dateRange(fromStr, toStr);
+
+    for (const day of days) {
+      const slots = this.findFreeSlots(ranges, day, {
+        minDuration: duration,
+        dayStart: options?.dayStart,
+        dayEnd: options?.dayEnd,
+      });
+      for (const slot of slots) {
+        if (slot.duration >= duration) {
+          return slot;
+        }
+      }
+    }
+
+    return null;
   }
 
   // === Private helpers ===

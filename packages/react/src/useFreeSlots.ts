@@ -1,0 +1,27 @@
+import { useMemo } from 'react';
+import { RangeEvaluator } from '@neo-reckoning/core';
+import type { DateRange, FreeSlot } from '@neo-reckoning/core';
+
+/**
+ * React hook that computes free (unoccupied) time slots for a given date.
+ * Wraps RangeEvaluator.findFreeSlots() with memoisation.
+ */
+export function useFreeSlots(config: {
+  ranges: DateRange[];
+  date: string;
+  minDuration?: number;
+  dayStart?: string;
+  dayEnd?: string;
+  userTimezone?: string;
+}): FreeSlot[] {
+  const { ranges, date, minDuration, dayStart, dayEnd, userTimezone } = config;
+
+  return useMemo(() => {
+    const evaluator = new RangeEvaluator(userTimezone);
+    return evaluator.findFreeSlots(ranges, date, {
+      minDuration,
+      dayStart,
+      dayEnd,
+    });
+  }, [ranges, date, minDuration, dayStart, dayEnd, userTimezone]);
+}
