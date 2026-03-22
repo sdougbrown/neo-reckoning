@@ -1,0 +1,24 @@
+{
+  "name": "@neo-reckoning/ical",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --passWithNoTests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@neo-reckoning/core": "workspace:*"
+  },
+  "files": [
+    "dist"
+  ]
+}
