@@ -60,11 +60,17 @@ jobs:
       - name: Publish @neo-reckoning/core
         working-directory: packages/core
         run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @neo-reckoning/react
         working-directory: packages/react
         run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @neo-reckoning/ical
         working-directory: packages/ical
         run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
