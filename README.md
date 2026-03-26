@@ -7,7 +7,9 @@ Headless calendar state management for modern web and mobile apps. A spiritual s
 | Package | Description | npm |
 |---|---|---|
 | [`@neo-reckoning/core`](packages/core) | Zero-dependency computation library. DateRange evaluation, calendar grids, timeline positioning, conflict detection, free slot finding, schedule scoring. | [![npm](https://img.shields.io/npm/v/@neo-reckoning/core)](https://www.npmjs.com/package/@neo-reckoning/core) |
+| [`@neo-reckoning/models`](packages/models) | Framework-neutral derived models and controller helpers built on top of core. Intended for advanced consumers and adapter packages. | [![npm](https://img.shields.io/npm/v/@neo-reckoning/models)](https://www.npmjs.com/package/@neo-reckoning/models) |
 | [`@neo-reckoning/react`](packages/react) | Headless React hooks. 9 hooks wrapping core — no DOM, no CSS. | [![npm](https://img.shields.io/npm/v/@neo-reckoning/react)](https://www.npmjs.com/package/@neo-reckoning/react) |
+| [`@neo-reckoning/preact`](packages/preact) | Headless Preact hooks with the same shape as the React adapter, backed by `@neo-reckoning/models`. | [![npm](https://img.shields.io/npm/v/@neo-reckoning/preact)](https://www.npmjs.com/package/@neo-reckoning/preact) |
 | [`@neo-reckoning/ical`](packages/ical) | Browser-compatible .ics parsing adapter. Planned — types stubbed. | [![npm](https://img.shields.io/npm/v/@neo-reckoning/ical)](https://www.npmjs.com/package/@neo-reckoning/ical) |
 
 ## What this is
@@ -31,13 +33,15 @@ Your app — whether React, React Native, Vue, or vanilla JS — provides the re
 - **Conflict detection** and **free slot finding** for scheduling intelligence
 - **Schedule scoring** — conflicts, free time, focus blocks, context switches
 - **No styling opinions** — outputs range IDs, not colors. Your palette system handles theming.
-- **162 tests** covering recurrence edge cases, DST transitions, timezone conversion, overlap detection
+- **Comprehensive test coverage** across recurrence edge cases, DST transitions, timezone conversion, and overlap detection
 
 ## Quick start
 
 ```
 npm install @neo-reckoning/core @neo-reckoning/react
 ```
+
+Advanced consumers who want framework-neutral derived helpers can install `@neo-reckoning/models` directly.
 
 ```typescript
 import { useState } from 'react';
@@ -76,7 +80,7 @@ Built with Yarn workspaces and Turborepo.
 ```bash
 yarn install          # install all dependencies
 yarn turbo run build  # build all packages
-yarn turbo run test   # run all 162 tests
+yarn turbo run test   # run the package test suite
 ```
 
 ## License

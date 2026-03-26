@@ -852,11 +852,37 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@neo-reckoning/models@workspace:^, @neo-reckoning/models@workspace:packages/models":
+  version: 0.0.0-use.local
+  resolution: "@neo-reckoning/models@workspace:packages/models"
+  dependencies:
+    "@neo-reckoning/core": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
+"@neo-reckoning/preact@workspace:packages/preact":
+  version: 0.0.0-use.local
+  resolution: "@neo-reckoning/preact@workspace:packages/preact"
+  dependencies:
+    "@neo-reckoning/core": "workspace:^"
+    "@neo-reckoning/models": "workspace:^"
+    "@types/jest": "npm:^29.5.14"
+    jest: "npm:^29.7.0"
+    jest-environment-jsdom: "npm:^30.3.0"
+    preact: "npm:^10.27.2"
+    ts-jest: "npm:^29.3.4"
+    typescript: "npm:^5.8.3"
+  peerDependencies:
+    preact: ^10.0.0
+  languageName: unknown
+  linkType: soft
+
 "@neo-reckoning/react@workspace:packages/react":
   version: 0.0.0-use.local
   resolution: "@neo-reckoning/react@workspace:packages/react"
   dependencies:
     "@neo-reckoning/core": "workspace:^"
+    "@neo-reckoning/models": "workspace:^"
     "@testing-library/dom": "npm:^10.4.1"
     "@testing-library/react": "npm:^16.3.2"
     "@types/jest": "npm:^29.5.14"
@@ -3308,6 +3334,13 @@ __metadata:
   dependencies:
     find-up: "npm:^4.0.0"
   checksum: 10c0/c56bda7769e04907a88423feb320babaed0711af8c436ce3e56763ab1021ba107c7b0cafb11cde7529f669cfc22bffcaebffb573645cbd63842ea9fb17cd7728
+  languageName: node
+  linkType: hard
+
+"preact@npm:^10.27.2":
+  version: 10.29.0
+  resolution: "preact@npm:10.29.0"
+  checksum: 10c0/d111381e5b48335e3a797a03adb83521cf5e9bdf880570fb2eff4fe9da9c82e6dedcbdf54538b1ed8f60bf813a0df0f4891b03dc32140ad93f8f720a8812dd5c
   languageName: node
   linkType: hard
 
