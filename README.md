@@ -10,6 +10,7 @@ Headless calendar state management for modern web and mobile apps. A spiritual s
 | [`@neo-reckoning/models`](packages/models) | Framework-neutral derived models and controller helpers built on top of core. Intended for advanced consumers and adapter packages. | [![npm](https://img.shields.io/npm/v/@neo-reckoning/models)](https://www.npmjs.com/package/@neo-reckoning/models) |
 | [`@neo-reckoning/react`](packages/react) | Headless React hooks. 9 hooks wrapping core — no DOM, no CSS. | [![npm](https://img.shields.io/npm/v/@neo-reckoning/react)](https://www.npmjs.com/package/@neo-reckoning/react) |
 | [`@neo-reckoning/preact`](packages/preact) | Headless Preact hooks with the same shape as the React adapter, backed by `@neo-reckoning/models`. | [![npm](https://img.shields.io/npm/v/@neo-reckoning/preact)](https://www.npmjs.com/package/@neo-reckoning/preact) |
+| [`@neo-reckoning/solid`](packages/solid) | Solid `create*` primitives backed by `@neo-reckoning/models`, exposing reactive accessors instead of hooks. | [![npm](https://img.shields.io/npm/v/@neo-reckoning/solid)](https://www.npmjs.com/package/@neo-reckoning/solid) |
 | [`@neo-reckoning/ical`](packages/ical) | Browser-compatible .ics parsing adapter. Planned — types stubbed. | [![npm](https://img.shields.io/npm/v/@neo-reckoning/ical)](https://www.npmjs.com/package/@neo-reckoning/ical) |
 
 ## What this is

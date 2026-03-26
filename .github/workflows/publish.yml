@@ -40,6 +40,7 @@ jobs:
       models_changed: ${{ steps.versions.outputs.models_changed }}
       react_changed: ${{ steps.versions.outputs.react_changed }}
       preact_changed: ${{ steps.versions.outputs.preact_changed }}
+      solid_changed: ${{ steps.versions.outputs.solid_changed }}
       ical_changed: ${{ steps.versions.outputs.ical_changed }}
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +63,7 @@ jobs:
 
           const before = process.env.BEFORE_SHA;
           const isZeroSha = !before || /^0+$/.test(before);
-          const packages = ['core', 'models', 'react', 'preact', 'ical'];
+          const packages = ['core', 'models', 'react', 'preact', 'solid', 'ical'];
 
           const readCurrentVersion = (pkg) => {
             const packageJson = path.join('packages', pkg, 'package.json');
@@ -161,6 +162,16 @@ jobs:
       - name: Publish @neo-reckoning/preact
         if: needs.detect-version-changes.outputs.preact_changed == 'true'
         working-directory: packages/preact
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="latest"
+          if echo "$VERSION" | grep -q "-"; then TAG="alpha"; fi
+          yarn pack -o package.tgz
+          npm publish package.tgz --provenance --access public --tag "$TAG"
+
+      - name: Publish @neo-reckoning/solid
+        if: needs.detect-version-changes.outputs.solid_changed == 'true'
+        working-directory: packages/solid
         run: |
           VERSION=$(node -p "require('./package.json').version")
           TAG="latest"
