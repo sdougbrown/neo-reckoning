@@ -1,9 +1,11 @@
 /** @type {import('jest').Config} */
 export default {
+  watchman: false,
   projects: [
     {
       displayName: 'core',
       rootDir: 'packages/core',
+      watchman: false,
       extensionsToTreatAsEsm: ['.ts'],
       moduleNameMapper: {
         '^(\\.{1,2}/.*)\\.js$': '$1',
