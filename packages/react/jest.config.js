@@ -1,5 +1,11 @@
+import { fileURLToPath } from 'node:url';
+
+const rootDir = fileURLToPath(new URL('.', import.meta.url));
+
 /** @type {import('jest').Config} */
 export default {
+  rootDir,
+  watchman: false,
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
@@ -9,11 +15,11 @@ export default {
       'ts-jest',
       {
         useESM: true,
-        tsconfig: 'tsconfig.json',
+        tsconfig: `${rootDir}/tsconfig.json`,
       },
     ],
   },
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   testMatch: ['**/__tests__/**/*.test.ts'],
   displayName: 'react',
 };

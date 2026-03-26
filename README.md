@@ -40,11 +40,15 @@ npm install @neo-reckoning/core @neo-reckoning/react
 ```
 
 ```typescript
+import { useState } from 'react';
 import { useCalendar, useConflicts, useFreeSlots } from '@neo-reckoning/react';
+
+const [focusDate, setFocusDate] = useState('2026-03-15');
 
 // Build a month grid
 const { months, next, prev } = useCalendar({
-  focusDate: '2026-03-15',
+  focusDate,
+  onFocusDateChange: setFocusDate,
   numberOfMonths: 1,
   ranges: myRanges,
   fidelity: 'month',

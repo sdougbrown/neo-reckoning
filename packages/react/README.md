@@ -19,10 +19,14 @@ React 18+ is a peer dependency.
 Calendar grid with navigation. The primary hook for month/week views.
 
 ```typescript
+import { useState } from 'react';
 import { useCalendar } from '@neo-reckoning/react';
 
+const [focusDate, setFocusDate] = useState('2026-03-15');
+
 const { months, next, prev, goTo, focusDate } = useCalendar({
-  focusDate: '2026-03-15',
+  focusDate,
+  onFocusDateChange: setFocusDate,
   numberOfMonths: 1,
   ranges: myRanges,
   fidelity: 'month',      // 'year' | 'month' | 'week' | 'day'
@@ -32,6 +36,8 @@ const { months, next, prev, goTo, focusDate } = useCalendar({
 
 // months[0].weeks[0].days[0].ranges → DayRangeInfo[]
 ```
+
+`useCalendar` is controlled: the caller owns `focusDate`, and `next`, `prev`, and `goTo` report changes through `onFocusDateChange`.
 
 ### `useCalendarEvents`
 
