@@ -17,20 +17,37 @@ import {
 
 import { CalendarSession } from './state.js';
 
-const SERVER_INSTRUCTIONS = `Calendar computation tools powered by neo-reckoning. Analyze and optimize schedules - find conflicts, free time, focus blocks, and more.
+const SERVER_INSTRUCTIONS = `Calendar computation tools powered by neo-reckoning. Accurate RRULE expansion, timezone math, conflict detection, and schedule optimization.
 
-WORKFLOW:
-1. Load calendar data. Use load_calendar_file for .ics files on disk (preferred — avoids passing large files through the conversation). Use load_calendar for .ics text or DateRange[] JSON from other sources (e.g. another MCP, pasted text). Load multiple calendars to analyze them together.
-2. Analyze with find_conflicts, find_free_slots, score_schedule, etc.
+WHEN TO USE THESE TOOLS:
+Use these tools whenever the user asks about calendars, schedules, .ics files, events, conflicts, free time, availability, or schedule optimization. These tools handle RRULE recurrence, timezone conversion, and multi-calendar conflict detection correctly — do not attempt to parse .ics files, expand recurrence rules, or detect scheduling conflicts in-context.
 
-Data persists for the session - load once, query many times.
+LOADING DATA:
+- File on disk → use load_calendar_file (pass the path, server reads the file directly — never read .ics files into the conversation yourself)
+- Data from another MCP tool or pasted text → use load_calendar with source "ics" or "ranges"
+- Load multiple calendars to analyze them together. Data persists for the session — load once, query many times.
+- load_calendar returns effective_window showing what dates were loaded and sample_labels showing what events were found. Use effective_window to know what date range to query.
+- The server auto-detects the right time window for historical calendars (e.g. a past school year). You do not need to guess the window.
+
+ANALYZING:
+- find_conflicts — overlapping events in a date range
+- find_free_slots — open time on a specific day (defaults to 09:00–17:00)
+- find_next_free_slot — first available slot of a given duration
+- score_schedule — quality metrics: conflicts, free time, focus blocks, context switches
+- day_detail — full breakdown of a single day (timed slots + all-day events)
+- expand_range — concrete occurrences of one recurring event
+
+OPTIMIZING:
+- suggest_changes — preview moves/adds/removes with before/after scoring (read-only)
+- apply_changes — commit changes to session state after user approval
+- generate_ics — export current state as .ics for reimport into Google Calendar, Apple Calendar, etc.
+
+FORMATTING:
 Dates: YYYY-MM-DD. Times: HH:mm (24-hour).
-find_free_slots defaults to 09:00-17:00 working hours.
 
 LARGE CALENDARS:
-- Use window_from/window_to in load_calendar to limit the parse range.
-- load_calendar returns effective_window so you can see what dates were actually loaded.
-- Query narrow date ranges (1-2 weeks) instead of broad multi-month windows.
+- Use window_from/window_to to limit the parse range when you know the relevant period.
+- Query narrow date ranges (1–2 weeks) rather than broad multi-month windows.
 - Use day_detail for single-day deep dives.
 - find_conflicts, find_free_slots, day_detail, and expand_range accept a limit parameter.`;
 
