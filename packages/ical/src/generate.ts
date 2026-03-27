@@ -171,6 +171,21 @@ function buildEvent(range: DateRange): InstanceType<typeof ICAL.Component> | nul
     component.addPropertyWithValue('description', range.title);
   }
 
+  const metadata = range.metadata;
+  if (metadata && typeof metadata === 'object' && !Array.isArray(metadata)) {
+    if (metadata.transparent === true) {
+      component.addPropertyWithValue('transp', 'TRANSPARENT');
+    }
+
+    if (
+      metadata.status === 'tentative' ||
+      metadata.status === 'confirmed' ||
+      metadata.status === 'cancelled'
+    ) {
+      component.addPropertyWithValue('status', metadata.status.toUpperCase());
+    }
+  }
+
   component.addProperty(createDateProperty('dtstart', anchorDate, range.startTime ?? null, range.timezone));
   addEventEnd(component, range, anchorDate);
 

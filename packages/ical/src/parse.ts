@@ -342,6 +342,18 @@ function buildDateRange(component: Component, window: ParseWindow): DateRange | 
   if (location) {
     metadata.location = location;
   }
+  const transp = component.getFirstPropertyValue('transp');
+  if (typeof transp === 'string' && transp.toUpperCase() === 'TRANSPARENT') {
+    metadata.transparent = true;
+  }
+
+  const status = component.getFirstPropertyValue('status');
+  if (typeof status === 'string') {
+    const normalized = status.toLowerCase();
+    if (normalized === 'tentative' || normalized === 'confirmed' || normalized === 'cancelled') {
+      metadata.status = normalized;
+    }
+  }
   if (Object.keys(metadata).length > 0) {
     baseRange.metadata = metadata;
   }

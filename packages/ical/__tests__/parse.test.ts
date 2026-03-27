@@ -221,6 +221,9 @@ describe('parseICS', () => {
         endTime: '15:30',
         duration: 90,
         timezone: 'America/New_York',
+        metadata: {
+          status: 'confirmed',
+        },
       },
       {
         id: 'google-2',
@@ -296,6 +299,33 @@ describe('parseICS', () => {
     const ranges = parseICS(loadFixture('simple-events.ics'), makeWindow('2026-03-01', '2026-03-31'));
 
     expect(byId(ranges, 'timed-single').metadata).toBeUndefined();
+  });
+
+  it('extracts TRANSP and STATUS into metadata', () => {
+    const ranges = parseICS(loadFixture('transparency-events.ics'), makeWindow('2026-04-01', '2026-04-30'));
+
+    expect(byId(ranges, 'transp-transparent').metadata).toEqual(
+      expect.objectContaining({
+        transparent: true,
+        status: 'confirmed',
+      }),
+    );
+
+    const opaqueRange = byId(ranges, 'transp-opaque');
+    expect(opaqueRange.metadata).toEqual(
+      expect.objectContaining({
+        status: 'tentative',
+      }),
+    );
+    expect(opaqueRange.metadata).not.toHaveProperty('transparent');
+
+    const noTranspRange = byId(ranges, 'transp-none');
+    expect(noTranspRange.metadata).toEqual(
+      expect.objectContaining({
+        status: 'cancelled',
+      }),
+    );
+    expect(noTranspRange.metadata).not.toHaveProperty('transparent');
   });
 
   it('extracts organizer email even when no CN parameter is present', () => {
