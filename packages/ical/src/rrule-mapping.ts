@@ -68,9 +68,11 @@ function getCountEndDate(rule: Recur, dtstart: Time): string {
   return formatTimeAsDate(current);
 }
 
-function getFiniteWindowFields(rule: Recur, dtstart: Time): Pick<DateRange, 'fromDate' | 'toDate' | 'fixedBetween'> | null {
+function getWindowFields(rule: Recur, dtstart: Time): Pick<DateRange, 'fromDate' | 'toDate' | 'fixedBetween'> {
   if (!rule.until && !rule.count) {
-    return null;
+    return {
+      fromDate: formatTimeAsDate(dtstart),
+    };
   }
 
   return {
@@ -81,7 +83,7 @@ function getFiniteWindowFields(rule: Recur, dtstart: Time): Pick<DateRange, 'fro
 }
 
 export function mapRRuleToDateRangeFields(rule: Recur, dtstart: Time): MapRRuleResult {
-  const baseFields = getFiniteWindowFields(rule, dtstart) ?? {};
+  const baseFields = getWindowFields(rule, dtstart);
 
   if (rule.interval > 1 && rule.freq !== 'DAILY') {
     return {

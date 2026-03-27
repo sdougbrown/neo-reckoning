@@ -1,0 +1,165 @@
+import { readFileSync } from 'node:fs';
+
+import { jest } from '@jest/globals';
+import type { DateRange } from '@neo-reckoning/core';
+
+import { parseICS } from '../src/parse.js';
+
+function loadFixture(name: string): string {
+  return readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8');
+}
+
+function makeWindow(from: string, to: string): { from: Date; to: Date } {
+  return {
+    from: new Date(`${from}T00:00:00`),
+    to: new Date(`${to}T00:00:00`),
+  };
+}
+
+function byId(ranges: DateRange[], id: string): DateRange {
+  const range = ranges.find(item => item.id === id);
+  if (!range) {
+    throw new Error(`Missing range ${id}`);
+  }
+  return range;
+}
+
+describe('parseICS', () => {
+  it('parses single and multi-day events from VEVENT components', () => {
+    const ranges = parseICS(loadFixture('simple-events.ics'), makeWindow('2026-03-01', '2026-03-31'));
+
+    expect(ranges).toHaveLength(4);
+    expect(byId(ranges, 'all-day-single')).toEqual({
+      id: 'all-day-single',
+      label: 'Holiday',
+      title: 'One day off',
+      dates: ['2026-03-21'],
+    });
+    expect(byId(ranges, 'timed-single')).toEqual({
+      id: 'timed-single',
+      label: 'Team Sync',
+      title: 'Weekly planning',
+      dates: ['2026-03-22'],
+      startTime: '09:00',
+      endTime: '10:30',
+      duration: 90,
+      timezone: null,
+    });
+    expect(byId(ranges, 'trip')).toEqual({
+      id: 'trip',
+      label: 'Conference Trip',
+      title: 'Travel and conference',
+      fromDate: '2026-03-24',
+      toDate: '2026-03-26',
+    });
+    expect(byId(ranges, 'toronto-lunch')).toEqual({
+      id: 'toronto-lunch',
+      label: 'Toronto Lunch',
+      title: 'Meet downtown',
+      dates: ['2026-03-28'],
+      startTime: '12:00',
+      endTime: '13:30',
+      duration: 90,
+      timezone: 'America/Toronto',
+    });
+  });
+
+  it('maps weekly RRULEs, EXDATE values, and timezone metadata', () => {
+    const [range] = parseICS(loadFixture('recurring-weekly.ics'), makeWindow('2026-03-01', '2026-04-30'));
+
+    expect(range).toEqual({
+      id: 'weekly-class',
+      label: 'Class',
+      title: 'Recurring class',
+      fromDate: '2026-03-02',
+      toDate: '2026-04-17',
+      fixedBetween: true,
+      everyWeekday: [1, 3, 5],
+      exceptDates: ['2026-03-16', '2026-03-20'],
+      startTime: '09:00',
+      endTime: '10:00',
+      duration: 60,
+      timezone: 'America/Toronto',
+    });
+  });
+
+  it('maps monthly BYMONTHDAY recurrences with COUNT into DateRange bounds', () => {
+    const [range] = parseICS(loadFixture('recurring-monthly.ics'), makeWindow('2026-01-01', '2026-03-31'));
+
+    expect(range).toEqual({
+      id: 'paydays',
+      label: 'Paydays',
+      title: 'Monthly payroll cadence',
+      fromDate: '2026-01-01',
+      toDate: '2026-03-15',
+      fixedBetween: true,
+      everyDate: [1, 15],
+      exceptDates: ['2026-03-15'],
+    });
+  });
+
+  it('maps daily and yearly Tier 1 RRULEs and filters by the requested window', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const marchRanges = parseICS(loadFixture('multi-event.ics'), makeWindow('2026-03-01', '2026-03-31'));
+    const juneRanges = parseICS(loadFixture('multi-event.ics'), makeWindow('2026-06-01', '2026-06-30'));
+
+    expect(marchRanges).toEqual([
+      {
+        id: 'daily-window',
+        label: 'Sprint',
+        title: 'Five day sprint',
+        fromDate: '2026-03-10',
+        toDate: '2026-03-14',
+        fixedBetween: true,
+        everyWeekday: [0, 1, 2, 3, 4, 5, 6],
+      },
+    ]);
+
+    expect(juneRanges).toEqual([
+      {
+        id: 'yearly-months',
+        label: 'Summer and Winter Window',
+        title: 'Seasonal schedule',
+        fromDate: '2026-01-01',
+        everyMonth: [6, 12],
+      },
+    ]);
+
+    warn.mockRestore();
+  });
+
+  it('skips complex RRULEs with a warning', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const ranges = parseICS(loadFixture('multi-event.ics'), makeWindow('2026-03-01', '2026-03-31'));
+
+    expect(ranges).toHaveLength(1);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('complex-monthly'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('ordinal BYDAY'));
+
+    warn.mockRestore();
+  });
+
+  it('parses realistic Google Calendar exports with VTIMEZONE data', () => {
+    const ranges = parseICS(loadFixture('google-export.ics'), makeWindow('2026-06-01', '2026-12-31'));
+
+    expect(ranges).toEqual([
+      {
+        id: 'google-1',
+        label: 'Board Review',
+        title: 'Quarterly board review',
+        dates: ['2026-06-15'],
+        startTime: '14:00',
+        endTime: '15:30',
+        duration: 90,
+        timezone: 'America/New_York',
+      },
+      {
+        id: 'google-2',
+        label: 'Company Shutdown',
+        fromDate: '2026-12-24',
+        toDate: '2027-01-01',
+      },
+    ]);
+  });
+});

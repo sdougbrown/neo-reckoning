@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --passWithNoTests",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' node ../../node_modules/jest/bin/jest.js --config jest.config.js --passWithNoTests",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
