@@ -32,26 +32,36 @@ export function gcalEventToDateRange(event: GCalEvent, options: GCalAdapterOptio
   if (event.recurringEventId) metadata.recurringEventId = event.recurringEventId;
   if (event.htmlLink) metadata.htmlLink = event.htmlLink;
 
-  if (event.allDay) {
+  const label = event.summary ?? options.fallbackLabel ?? '(busy)';
+  const isAllDay = event.allDay || (event.start.date != null && event.start.dateTime == null);
+
+  if (isAllDay) {
+    const fromDate = event.start.date ?? event.start.dateTime?.slice(0, 10);
+    const endDate = event.end.date ?? event.end.dateTime?.slice(0, 10);
     return {
       id: event.id,
-      label: event.summary ?? options.fallbackLabel ?? '(busy)',
-      fromDate: event.start.date,
-      toDate: subtractOneDay(event.end.date!),
+      label,
+      fromDate,
+      toDate: endDate ? subtractOneDay(endDate) : fromDate,
       metadata,
     };
   }
 
-  const startDateTime = event.start.dateTime!;
-  const endDateTime = event.end.dateTime!;
+  const startDateTime = event.start.dateTime ?? event.start.date;
+  const endDateTime = event.end.dateTime ?? event.end.date;
+
+  if (!startDateTime || !endDateTime) {
+    // Defensive fallback — event has no usable time data
+    return { id: event.id, label, metadata };
+  }
 
   return {
     id: event.id,
-    label: event.summary ?? options.fallbackLabel ?? '(busy)',
+    label,
     fromDate: startDateTime.slice(0, 10),
     toDate: endDateTime.slice(0, 10),
-    startTime: startDateTime.slice(11, 16),
-    endTime: endDateTime.slice(11, 16),
+    startTime: startDateTime.length > 10 ? startDateTime.slice(11, 16) : undefined,
+    endTime: endDateTime.length > 10 ? endDateTime.slice(11, 16) : undefined,
     timezone: event.start.timeZone,
     metadata,
   };

@@ -24,23 +24,31 @@ export function msftEventToDateRange(event: MsftGraphEvent, options: MsftAdapter
   if (event.seriesMasterId) metadata.seriesMasterId = event.seriesMasterId;
   if (event.webLink) metadata.webLink = event.webLink;
 
+  const label = event.subject ?? options.fallbackLabel ?? '(busy)';
+  const startDt = event.start?.dateTime;
+  const endDt = event.end?.dateTime;
+
+  if (!startDt || !endDt) {
+    return { id: event.id, label, metadata };
+  }
+
   if (event.isAllDay) {
     return {
       id: event.id,
-      label: event.subject ?? options.fallbackLabel ?? '(busy)',
-      fromDate: event.start.dateTime.slice(0, 10),
-      toDate: subtractOneDay(event.end.dateTime.slice(0, 10)),
+      label,
+      fromDate: startDt.slice(0, 10),
+      toDate: subtractOneDay(endDt.slice(0, 10)),
       metadata,
     };
   }
 
   return {
     id: event.id,
-    label: event.subject ?? options.fallbackLabel ?? '(busy)',
-    fromDate: event.start.dateTime.slice(0, 10),
-    toDate: event.end.dateTime.slice(0, 10),
-    startTime: event.start.dateTime.slice(11, 16),
-    endTime: event.end.dateTime.slice(11, 16),
+    label,
+    fromDate: startDt.slice(0, 10),
+    toDate: endDt.slice(0, 10),
+    startTime: startDt.length > 10 ? startDt.slice(11, 16) : undefined,
+    endTime: endDt.length > 10 ? endDt.slice(11, 16) : undefined,
     timezone: toIanaTimezone(event.start.timeZone),
     metadata,
   };
