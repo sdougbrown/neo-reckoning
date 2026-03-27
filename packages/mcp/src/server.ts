@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import {
   RangeEvaluator,
   scoreSchedule,
@@ -19,7 +20,7 @@ import { CalendarSession } from './state.js';
 const SERVER_INSTRUCTIONS = `Calendar computation tools powered by neo-reckoning. Analyze and optimize schedules - find conflicts, free time, focus blocks, and more.
 
 WORKFLOW:
-1. Load calendar data with load_calendar (.ics text or DateRange[] JSON). Load multiple calendars to analyze them together.
+1. Load calendar data. Use load_calendar_file for .ics files on disk (preferred — avoids passing large files through the conversation). Use load_calendar for .ics text or DateRange[] JSON from other sources (e.g. another MCP, pasted text). Load multiple calendars to analyze them together.
 2. Analyze with find_conflicts, find_free_slots, score_schedule, etc.
 
 Data persists for the session - load once, query many times.
@@ -103,6 +104,37 @@ export const TOOLS: Tool[] = [
         },
       },
       required: ['source', 'data'],
+    },
+  },
+  {
+    name: 'load_calendar_file',
+    description:
+      'Load an .ics file from disk by path. Preferred over load_calendar when the user provides a file path — avoids passing large file contents through the conversation.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Absolute path to the .ics file on disk.',
+        },
+        id: {
+          type: 'string',
+          description: 'Optional calendar identifier. Defaults to calendar-N.',
+        },
+        timezone: {
+          type: 'string',
+          description: 'Optional IANA timezone to use for the session evaluator.',
+        },
+        window_from: {
+          type: 'string',
+          description: 'Optional parse window start date (YYYY-MM-DD). Must be paired with window_to.',
+        },
+        window_to: {
+          type: 'string',
+          description: 'Optional parse window end date (YYYY-MM-DD). Must be paired with window_from.',
+        },
+      },
+      required: ['path'],
     },
   },
   {
@@ -856,6 +888,56 @@ function getParseWindow(): { from: Date; to: Date } {
   return { from, to };
 }
 
+interface IcsLoadResult {
+  ranges: DateRange[];
+  effectiveWindow: { from: Date; to: Date };
+  detectedWindow: { from: Date; to: Date } | null;
+}
+
+function loadIcsData(
+  icsText: string,
+  requestedWindow: { from: Date; to: Date },
+): IcsLoadResult {
+  const detectedWindow = detectDataWindow(icsText);
+  let ranges = parseICS(icsText, requestedWindow);
+  let effectiveWindow = requestedWindow;
+
+  // If we got very few results but the data lives elsewhere, re-parse
+  // with the detected window. Unbounded recurrences (no UNTIL) match
+  // any window, so a small result count doesn't mean the window is right.
+  if (detectedWindow && ranges.length < 10) {
+    const detectedRanges = parseICS(icsText, detectedWindow);
+    if (detectedRanges.length > ranges.length) {
+      ranges = detectedRanges;
+      effectiveWindow = detectedWindow;
+    }
+  }
+
+  return { ranges, effectiveWindow, detectedWindow };
+}
+
+function buildLoadResponse(
+  session: CalendarSession,
+  ranges: DateRange[],
+  calendarId: string,
+  source: 'ics' | 'ranges',
+  effectiveWindow: { from: Date; to: Date },
+  detectedWindow: { from: Date; to: Date } | null,
+): CallToolResult {
+  session.loadCalendar(calendarId, ranges, source);
+  const labelSummary = collectUniqueLabels(ranges, 20);
+
+  return jsonResult({
+    calendars_loaded: session.calendars.size,
+    ranges_loaded: ranges.length,
+    calendar_id: calendarId,
+    effective_window: formatWindow(effectiveWindow),
+    detected_data_window: detectedWindow ? formatWindow(detectedWindow) : null,
+    sample_labels: labelSummary.labels,
+    has_more_labels: labelSummary.hasMore,
+  });
+}
+
 export async function handleToolCall(
   session: CalendarSession,
   name: string,
@@ -888,46 +970,43 @@ export async function handleToolCall(
             ? { from: parseDateArgument(windowFrom), to: parseDateArgument(windowTo) }
             : getParseWindow();
 
-        let ranges: DateRange[];
-        let effectiveWindow = requestedWindow;
-        let detectedWindow: { from: Date; to: Date } | null = null;
+        const calendarId = session.createCalendarId(id);
 
         if (source === 'ics') {
-          detectedWindow = detectDataWindow(data);
-          ranges = parseICS(data, requestedWindow);
-
-          // If we got very few results but the data lives elsewhere, re-parse
-          // with the detected window. Unbounded recurrences (no UNTIL) match
-          // any window, so a small result count doesn't mean the window is right.
-          if (detectedWindow && ranges.length < 10) {
-            const detectedRanges = parseICS(data, detectedWindow);
-            if (detectedRanges.length > ranges.length) {
-              ranges = detectedRanges;
-              effectiveWindow = detectedWindow;
-            }
-          }
-        } else {
-          const parsed = JSON.parse(data) as unknown;
-          if (!Array.isArray(parsed)) {
-            throw new Error('Range JSON must decode to an array.');
-          }
-
-          ranges = parsed as DateRange[];
+          const result = loadIcsData(data, requestedWindow);
+          return buildLoadResponse(session, result.ranges, calendarId, 'ics', result.effectiveWindow, result.detectedWindow);
         }
 
-        const calendarId = session.createCalendarId(id);
-        session.loadCalendar(calendarId, ranges, source);
-        const labelSummary = collectUniqueLabels(ranges, 20);
+        const parsed = JSON.parse(data) as unknown;
+        if (!Array.isArray(parsed)) {
+          throw new Error('Range JSON must decode to an array.');
+        }
 
-        return jsonResult({
-          calendars_loaded: session.calendars.size,
-          ranges_loaded: ranges.length,
-          calendar_id: calendarId,
-          effective_window: formatWindow(effectiveWindow),
-          detected_data_window: detectedWindow ? formatWindow(detectedWindow) : null,
-          sample_labels: labelSummary.labels,
-          has_more_labels: labelSummary.hasMore,
-        });
+        return buildLoadResponse(session, parsed as DateRange[], calendarId, 'ranges', requestedWindow, null);
+      }
+
+      case 'load_calendar_file': {
+        const filePath = requireString(args, 'path');
+        const id = optionalString(args, 'id');
+        const timezone = optionalString(args, 'timezone');
+        const windowFrom = optionalString(args, 'window_from');
+        const windowTo = optionalString(args, 'window_to');
+
+        if ((windowFrom && !windowTo) || (!windowFrom && windowTo)) {
+          throw new Error('"window_from" and "window_to" must be provided together.');
+        }
+
+        applyTimezone(session, timezone);
+
+        const data = readFileSync(filePath, 'utf8');
+        const requestedWindow =
+          windowFrom && windowTo
+            ? { from: parseDateArgument(windowFrom), to: parseDateArgument(windowTo) }
+            : getParseWindow();
+
+        const calendarId = session.createCalendarId(id);
+        const result = loadIcsData(data, requestedWindow);
+        return buildLoadResponse(session, result.ranges, calendarId, 'ics', result.effectiveWindow, result.detectedWindow);
       }
 
       case 'find_conflicts': {
