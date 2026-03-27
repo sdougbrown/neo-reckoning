@@ -3,7 +3,7 @@ import { RangeEvaluator } from '@neo-reckoning/core';
 
 export interface LoadedCalendar {
   ranges: DateRange[];
-  source: 'ics' | 'ranges';
+  source: 'ics' | 'ranges' | 'gcal';
 }
 
 export interface CalendarRangeEntry {
@@ -39,7 +39,7 @@ export class CalendarSession {
     return nextId;
   }
 
-  loadCalendar(id: string, ranges: DateRange[], source: 'ics' | 'ranges'): void {
+  loadCalendar(id: string, ranges: DateRange[], source: 'ics' | 'ranges' | 'gcal'): void {
     const calendarId = this.createCalendarId(id);
     this.calendars.set(calendarId, {
       ranges: [...ranges],

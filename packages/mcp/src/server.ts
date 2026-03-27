@@ -16,6 +16,8 @@ import {
   type Tool,
 } from '@modelcontextprotocol/sdk/types.js';
 
+import { gcalEventsToDateRanges } from './adapters/gcal.js';
+import type { GCalEvent } from './adapters/types.js';
 import { CalendarSession } from './state.js';
 
 const SERVER_INSTRUCTIONS = `Calendar computation tools powered by neo-reckoning. Accurate RRULE expansion, timezone math, conflict detection, and schedule optimization.
@@ -26,6 +28,7 @@ Use these tools whenever the user asks about calendars, schedules, .ics files, e
 LOADING DATA:
 - File on disk → use load_calendar_file (pass the path, server reads the file directly — never read .ics files into the conversation yourself)
 - Data from another MCP tool or pasted text → use load_calendar with source "ics" or "ranges"
+- Google Calendar data → use load_calendar with source "gcal" and pass the raw JSON array from gcal_list_events. The server auto-filters (transparent, declined, working-location events excluded) and converts to DateRange format.
 - Load multiple calendars to analyze them together. Data persists for the session — load once, query many times.
 - load_calendar returns effective_window showing what dates were loaded and sample_labels showing what events were found. Use effective_window to know what date range to query.
 - The server auto-detects the right time window for historical calendars (e.g. a past school year). You do not need to guess the window.
@@ -44,7 +47,8 @@ CROSS-CALENDAR ANALYSIS:
 - Load multiple calendars with distinct IDs: load_calendar(id="alice", ...), load_calendar(id="bob", ...)
 - find_shared_events shows meetings that appear in multiple calendars (matched by event UID)
 - find_common_availability finds free slots across specified calendars
-- Shared events include attendee metadata (email, role, response status) when available from the .ics source
+- Shared events include attendee metadata (email, role, response status) when available from the source
+- When loading Google Calendar data, use source "gcal" — it preserves event type, response status, and transparency in metadata
 - To reschedule a shared meeting: identify it with find_shared_events, find a new slot with find_common_availability, then suggest_changes to move it
 
 OPTIMIZING:
@@ -106,12 +110,14 @@ export const TOOLS: Tool[] = [
       properties: {
         source: {
           type: 'string',
-          enum: ['ics', 'ranges'],
-          description: 'Whether data contains .ics text or a JSON DateRange array.',
+          enum: ['ics', 'ranges', 'gcal'],
+          description:
+            'Whether data contains .ics text, a JSON DateRange array, or a JSON array from Google Calendar MCP gcal_list_events.',
         },
         data: {
           type: 'string',
-          description: 'The .ics calendar text or JSON-encoded DateRange[].',
+          description:
+            'For source "ics": raw .ics calendar text. For source "ranges": JSON DateRange array (example: [{"id":"mtg1","label":"Team Sync","fromDate":"2026-03-30","toDate":"2026-03-30","startTime":"09:00","endTime":"10:00"}]). NOTE: use fromDate/toDate/startTime/endTime — NOT start/end. For source "gcal": JSON array from Google Calendar MCP gcal_list_events — events are auto-filtered (declined, transparent, working-location excluded) and converted to DateRange format.',
         },
         id: {
           type: 'string',
@@ -1254,7 +1260,7 @@ function buildLoadResponse(
   session: CalendarSession,
   ranges: DateRange[],
   calendarId: string,
-  source: 'ics' | 'ranges',
+  source: 'ics' | 'ranges' | 'gcal',
   effectiveWindow: { from: Date; to: Date },
   detectedWindow: { from: Date; to: Date } | null,
 ): CallToolResult {
@@ -1289,8 +1295,8 @@ export async function handleToolCall(
         const windowFrom = optionalString(args, 'window_from');
         const windowTo = optionalString(args, 'window_to');
 
-        if (source !== 'ics' && source !== 'ranges') {
-          throw new Error('"source" must be either "ics" or "ranges".');
+        if (source !== 'ics' && source !== 'ranges' && source !== 'gcal') {
+          throw new Error('"source" must be "ics", "ranges", or "gcal".');
         }
 
         if ((windowFrom && !windowTo) || (!windowFrom && windowTo)) {
@@ -1309,6 +1315,16 @@ export async function handleToolCall(
         if (source === 'ics') {
           const result = loadIcsData(data, requestedWindow);
           return buildLoadResponse(session, result.ranges, calendarId, 'ics', result.effectiveWindow, result.detectedWindow);
+        }
+
+        if (source === 'gcal') {
+          const parsed = JSON.parse(data) as unknown;
+          if (!Array.isArray(parsed)) {
+            throw new Error('Google Calendar JSON must decode to an array of events.');
+          }
+
+          const ranges = gcalEventsToDateRanges(parsed as GCalEvent[]);
+          return buildLoadResponse(session, ranges, calendarId, 'gcal', requestedWindow, null);
         }
 
         const parsed = JSON.parse(data) as unknown;

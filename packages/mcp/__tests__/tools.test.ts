@@ -10,6 +10,7 @@ import type {
 } from '@neo-reckoning/core';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
+import type { GCalEvent } from '../src/adapters/types.js';
 import { handleToolCall } from '../src/server.js';
 import { CalendarSession } from '../src/state.js';
 
@@ -145,6 +146,80 @@ describe('handleToolCall', () => {
         sample_labels: ['School Day'],
       }),
     );
+  });
+
+  describe('load_calendar with source gcal', () => {
+    it('loads blocking events from Google Calendar JSON', async () => {
+      const session = new CalendarSession();
+      const gcalEvents: GCalEvent[] = [
+        {
+          id: 'evt_001',
+          summary: 'Team Sync',
+          eventType: 'default',
+          start: { dateTime: '2026-03-30T09:00:00-04:00', timeZone: 'America/New_York' },
+          end: { dateTime: '2026-03-30T10:00:00-04:00', timeZone: 'America/New_York' },
+          allDay: false,
+          status: 'confirmed',
+          myResponseStatus: 'accepted',
+        },
+        {
+          id: 'evt_002',
+          summary: 'Home',
+          eventType: 'workingLocation',
+          start: { date: '2026-03-30' },
+          end: { date: '2026-03-31' },
+          allDay: true,
+          status: 'confirmed',
+          transparency: 'transparent',
+        },
+        {
+          id: 'evt_003',
+          summary: 'Focus Block',
+          eventType: 'default',
+          start: { dateTime: '2026-03-30T14:00:00-04:00', timeZone: 'America/New_York' },
+          end: { dateTime: '2026-03-30T16:00:00-04:00', timeZone: 'America/New_York' },
+          allDay: false,
+          status: 'confirmed',
+        },
+        {
+          id: 'evt_004',
+          summary: 'Declined Meeting',
+          eventType: 'default',
+          start: { dateTime: '2026-03-30T11:00:00-04:00', timeZone: 'America/New_York' },
+          end: { dateTime: '2026-03-30T12:00:00-04:00', timeZone: 'America/New_York' },
+          allDay: false,
+          status: 'confirmed',
+          myResponseStatus: 'declined',
+        },
+      ];
+
+      const result = await handleToolCall(session, 'load_calendar', {
+        source: 'gcal',
+        data: JSON.stringify(gcalEvents),
+        id: 'alice',
+      });
+      const body = parseJsonContent<{ ranges_loaded: number; calendar_id: string }>(result);
+
+      expect(body.ranges_loaded).toBe(2);
+      expect(body.calendar_id).toBe('alice');
+
+      const loaded = session.calendars.get('alice');
+      expect(loaded).toBeDefined();
+      expect(loaded?.source).toBe('gcal');
+      expect(loaded?.ranges).toHaveLength(2);
+      expect(loaded?.ranges[0]?.label).toBe('Team Sync');
+      expect(loaded?.ranges[1]?.label).toBe('Focus Block');
+    });
+
+    it('rejects non-array gcal data', async () => {
+      const session = new CalendarSession();
+      const result = await handleToolCall(session, 'load_calendar', {
+        source: 'gcal',
+        data: JSON.stringify({ events: [] }),
+      });
+
+      expect(result.isError).toBe(true);
+    });
   });
 
   it('lists loaded calendars with range counts and labels', async () => {
@@ -1025,6 +1100,6 @@ describe('handleToolCall', () => {
     });
 
     expect(invalidLoad.isError).toBe(true);
-    expect(getTextContent(invalidLoad)).toContain('"source" must be either "ics" or "ranges".');
+    expect(getTextContent(invalidLoad)).toContain('"source" must be "ics", "ranges", or "gcal".');
   });
 });
