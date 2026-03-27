@@ -6,7 +6,7 @@ import {
   type FreeSlot,
   type TimeSlot,
 } from '@neo-reckoning/core';
-import { parseICS } from '@neo-reckoning/ical';
+import { generateICS, parseICS } from '@neo-reckoning/ical';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import {
   CallToolRequestSchema,
@@ -26,6 +26,41 @@ WORKFLOW:
 Data persists for the session - load once, query many times.
 Dates: YYYY-MM-DD. Times: HH:mm (24-hour).
 find_free_slots defaults to 09:00-17:00 working hours.`;
+
+const PROPOSED_CHANGE_SCHEMA = {
+  type: 'object',
+  properties: {
+    action: {
+      type: 'string',
+      enum: ['move', 'add', 'remove'],
+      description: 'Whether to move, add, or remove a range.',
+    },
+    range_id: {
+      type: 'string',
+      description: 'The range id to mutate for move/remove actions.',
+    },
+    updates: {
+      type: 'object',
+      properties: {
+        startTime: { type: 'string' },
+        endTime: { type: 'string' },
+        date: { type: 'string' },
+        fromDate: { type: 'string' },
+        toDate: { type: 'string' },
+      },
+      description: 'Updated values to apply to an existing range.',
+    },
+    new_range: {
+      type: 'object',
+      description: 'A new DateRange to add for add actions.',
+    },
+    reason: {
+      type: 'string',
+      description: 'Human-readable rationale for the proposed change.',
+    },
+  },
+  required: ['action', 'reason'],
+} as const;
 
 export const TOOLS: Tool[] = [
   {
@@ -192,7 +227,79 @@ export const TOOLS: Tool[] = [
       properties: {},
     },
   },
+  {
+    name: 'suggest_changes',
+    description: 'Preview schedule changes with before/after scoring and conflict counts without mutating session state.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        changes: {
+          type: 'array',
+          items: PROPOSED_CHANGE_SCHEMA,
+          description: 'Proposed change set to evaluate against the current session.',
+        },
+        from: {
+          type: 'string',
+          description: 'Optional scoring window start date. Defaults to earliest affected date minus 7 days.',
+        },
+        to: {
+          type: 'string',
+          description: 'Optional scoring window end date. Defaults to latest affected date plus 7 days.',
+        },
+      },
+      required: ['changes'],
+    },
+  },
+  {
+    name: 'apply_changes',
+    description: 'Apply schedule changes to the current session.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        changes: {
+          type: 'array',
+          items: PROPOSED_CHANGE_SCHEMA,
+          description: 'Proposed change set to apply to the current session.',
+        },
+      },
+      required: ['changes'],
+    },
+  },
+  {
+    name: 'generate_ics',
+    description: 'Export loaded calendar data as .ics text.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        calendars: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Optional list of calendar ids to export.',
+        },
+        calendar_name: {
+          type: 'string',
+          description: 'Optional calendar name to set as X-WR-CALNAME.',
+        },
+      },
+    },
+  },
 ];
+
+interface ProposedChangeUpdates {
+  startTime?: string;
+  endTime?: string;
+  date?: string;
+  fromDate?: string;
+  toDate?: string;
+}
+
+interface ProposedChange {
+  action: 'move' | 'add' | 'remove';
+  range_id?: string;
+  updates?: ProposedChangeUpdates;
+  new_range?: DateRange;
+  reason: string;
+}
 
 function jsonResult(value: unknown): CallToolResult {
   return {
@@ -214,6 +321,17 @@ function errorResult(message: string): CallToolResult {
       },
     ],
     isError: true,
+  };
+}
+
+function textResult(text: string): CallToolResult {
+  return {
+    content: [
+      {
+        type: 'text',
+        text,
+      },
+    ],
   };
 }
 
@@ -263,6 +381,74 @@ function optionalStringArray(args: Record<string, unknown>, key: string): string
   }
 
   return value;
+}
+
+function requireRecord(value: unknown, label: string): Record<string, unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new Error(`"${label}" must be an object.`);
+  }
+
+  return value as Record<string, unknown>;
+}
+
+function cloneRange(range: DateRange): DateRange {
+  return structuredClone(range);
+}
+
+function parseProposedChangeUpdates(value: unknown): ProposedChangeUpdates | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const record = requireRecord(value, 'updates');
+  return {
+    startTime: optionalString(record, 'startTime'),
+    endTime: optionalString(record, 'endTime'),
+    date: optionalString(record, 'date'),
+    fromDate: optionalString(record, 'fromDate'),
+    toDate: optionalString(record, 'toDate'),
+  };
+}
+
+function parseNewRange(value: unknown): DateRange | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const record = requireRecord(value, 'new_range');
+  const id = requireString(record, 'id');
+  const label = requireString(record, 'label');
+
+  return {
+    ...record,
+    id,
+    label,
+  } as DateRange;
+}
+
+function parseProposedChanges(args: Record<string, unknown>): ProposedChange[] {
+  const value = args.changes;
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error('"changes" must be a non-empty array.');
+  }
+
+  return value.map((item, index) => {
+    const record = requireRecord(item, `changes[${index}]`);
+    const action = requireString(record, 'action');
+    const reason = requireString(record, 'reason');
+
+    if (action !== 'move' && action !== 'add' && action !== 'remove') {
+      throw new Error(`changes[${index}].action must be "move", "add", or "remove".`);
+    }
+
+    return {
+      action,
+      range_id: optionalString(record, 'range_id'),
+      updates: parseProposedChangeUpdates(record.updates),
+      new_range: parseNewRange(record.new_range),
+      reason,
+    };
+  });
 }
 
 function parseDateArgument(value: string): Date {
@@ -318,6 +504,252 @@ function buildDayDetail(
   timeSlots.sort((left, right) => left.startTime.localeCompare(right.startTime));
 
   return { timeSlots, allDayRanges };
+}
+
+function findRangeById(ranges: DateRange[], rangeId: string): DateRange | undefined {
+  return ranges.find(range => range.id === rangeId);
+}
+
+function applyDateUpdate(range: DateRange, date: string): DateRange {
+  if (range.dates?.length) {
+    if (range.dates.length !== 1) {
+      throw new Error(`Range "${range.id}" cannot apply a single "date" update because it has multiple explicit dates.`);
+    }
+
+    return {
+      ...range,
+      dates: [date],
+      fromDate: undefined,
+      toDate: undefined,
+    };
+  }
+
+  if (range.fromDate !== undefined || range.toDate !== undefined) {
+    return {
+      ...range,
+      dates: undefined,
+      fromDate: range.fromDate !== undefined ? date : range.fromDate,
+      toDate: range.toDate !== undefined ? date : range.toDate,
+    };
+  }
+
+  return {
+    ...range,
+    dates: [date],
+    fromDate: undefined,
+    toDate: undefined,
+  };
+}
+
+function applyMoveToRange(range: DateRange, updates?: ProposedChangeUpdates): DateRange {
+  if (!updates) {
+    throw new Error(`Move change for range "${range.id}" is missing "updates".`);
+  }
+
+  let nextRange = cloneRange(range);
+  if (updates.date) {
+    nextRange = applyDateUpdate(nextRange, updates.date);
+  }
+
+  const { date: _date, ...rest } = updates;
+  return {
+    ...nextRange,
+    ...rest,
+  };
+}
+
+function applyChangesToRanges(ranges: DateRange[], changes: ProposedChange[]): { ranges: DateRange[]; changesApplied: number } {
+  let nextRanges = ranges.map(cloneRange);
+  let changesApplied = 0;
+
+  for (const change of changes) {
+    switch (change.action) {
+      case 'move': {
+        if (!change.range_id) {
+          throw new Error('Move changes require "range_id".');
+        }
+
+        const index = nextRanges.findIndex(range => range.id === change.range_id);
+        if (index === -1) {
+          throw new Error(`Range "${change.range_id}" was not found in the current session.`);
+        }
+
+        nextRanges[index] = applyMoveToRange(nextRanges[index], change.updates);
+        changesApplied += 1;
+        break;
+      }
+
+      case 'add': {
+        if (!change.new_range) {
+          throw new Error('Add changes require "new_range".');
+        }
+
+        nextRanges = [...nextRanges, cloneRange(change.new_range)];
+        changesApplied += 1;
+        break;
+      }
+
+      case 'remove': {
+        if (!change.range_id) {
+          throw new Error('Remove changes require "range_id".');
+        }
+
+        const filteredRanges = nextRanges.filter(range => range.id !== change.range_id);
+        if (filteredRanges.length === nextRanges.length) {
+          throw new Error(`Range "${change.range_id}" was not found in the current session.`);
+        }
+
+        nextRanges = filteredRanges;
+        changesApplied += 1;
+        break;
+      }
+    }
+  }
+
+  return { ranges: nextRanges, changesApplied };
+}
+
+function getRangeDateWindow(range: DateRange): { from: string; to: string } | undefined {
+  if (range.dates?.length) {
+    const sortedDates = [...range.dates].sort();
+    return {
+      from: sortedDates[0],
+      to: sortedDates[sortedDates.length - 1],
+    };
+  }
+
+  const dates = [range.fromDate, range.toDate].filter((value): value is string => Boolean(value)).sort();
+  if (dates.length > 0) {
+    return {
+      from: dates[0],
+      to: dates[dates.length - 1],
+    };
+  }
+
+  return undefined;
+}
+
+function getDefaultSuggestionWindow(
+  currentRanges: DateRange[],
+  changes: ProposedChange[],
+): { from: string; to: string } {
+  const windows: Array<{ from: string; to: string }> = [];
+
+  for (const change of changes) {
+    if (change.action === 'add') {
+      if (!change.new_range) {
+        throw new Error('Add changes require "new_range".');
+      }
+
+      const window = getRangeDateWindow(change.new_range);
+      if (window) {
+        windows.push(window);
+      }
+      continue;
+    }
+
+    if (!change.range_id) {
+      throw new Error(`${change.action === 'move' ? 'Move' : 'Remove'} changes require "range_id".`);
+    }
+
+    const range = findRangeById(currentRanges, change.range_id);
+    if (!range) {
+      throw new Error(`Range "${change.range_id}" was not found in the current session.`);
+    }
+
+    const originalWindow = getRangeDateWindow(range);
+    if (originalWindow) {
+      windows.push(originalWindow);
+    }
+
+    if (change.action === 'move') {
+      const movedWindow = getRangeDateWindow(applyMoveToRange(range, change.updates));
+      if (movedWindow) {
+        windows.push(movedWindow);
+      }
+    }
+  }
+
+  if (windows.length === 0) {
+    throw new Error('Could not infer a scoring window from the proposed changes. Provide "from" and "to".');
+  }
+
+  const earliest = windows.map(window => window.from).sort()[0];
+  const latest = windows.map(window => window.to).sort()[windows.length - 1];
+
+  return {
+    from: shiftDay(earliest, -7),
+    to: shiftDay(latest, 7),
+  };
+}
+
+function summarizeSchedule(
+  evaluator: RangeEvaluator,
+  ranges: DateRange[],
+  from: string,
+  to: string,
+): { score: ReturnType<typeof scoreSchedule>; conflicts: number } {
+  const fromDate = parseDateArgument(from);
+  const toDate = parseDateArgument(to);
+
+  return {
+    score: scoreSchedule(evaluator, ranges, fromDate, toDate),
+    conflicts: evaluator.findConflictsInWindow(ranges, fromDate, toDate).length,
+  };
+}
+
+function applyChangesToSession(session: CalendarSession, changes: ProposedChange[]): number {
+  let changesApplied = 0;
+
+  for (const change of changes) {
+    switch (change.action) {
+      case 'move': {
+        if (!change.range_id) {
+          throw new Error('Move changes require "range_id".');
+        }
+
+        const calendarId = session.findRangeCalendar(change.range_id);
+        if (!calendarId) {
+          throw new Error(`Range "${change.range_id}" was not found in the current session.`);
+        }
+
+        const range = findRangeById(session.getAllRanges([calendarId]), change.range_id);
+        if (!range) {
+          throw new Error(`Range "${change.range_id}" was not found in the current session.`);
+        }
+
+        session.updateRange(change.range_id, applyMoveToRange(range, change.updates));
+        changesApplied += 1;
+        break;
+      }
+
+      case 'add': {
+        if (!change.new_range) {
+          throw new Error('Add changes require "new_range".');
+        }
+
+        const firstCalendarId = session.calendars.keys().next().value as string | undefined;
+        session.addRange(firstCalendarId ?? 'proposals', cloneRange(change.new_range));
+        changesApplied += 1;
+        break;
+      }
+
+      case 'remove': {
+        if (!change.range_id) {
+          throw new Error('Remove changes require "range_id".');
+        }
+
+        if (!session.removeRange(change.range_id)) {
+          throw new Error(`Range "${change.range_id}" was not found in the current session.`);
+        }
+
+        changesApplied += 1;
+        break;
+      }
+    }
+  }
+
+  return changesApplied;
 }
 
 function applyTimezone(session: CalendarSession, timezone?: string): void {
@@ -461,6 +893,38 @@ export async function handleToolCall(
 
       case 'list_calendars': {
         return jsonResult(session.getCalendarSummary());
+      }
+
+      case 'suggest_changes': {
+        const changes = parseProposedChanges(args);
+        const currentRanges = session.getAllRanges();
+        const defaultWindow = getDefaultSuggestionWindow(currentRanges, changes);
+        const from = optionalString(args, 'from') ?? defaultWindow.from;
+        const to = optionalString(args, 'to') ?? defaultWindow.to;
+        const preview = applyChangesToRanges(currentRanges, changes);
+
+        return jsonResult({
+          before: summarizeSchedule(session.evaluator, currentRanges, from, to),
+          after: summarizeSchedule(session.evaluator, preview.ranges, from, to),
+          changes_applied: preview.changesApplied,
+        });
+      }
+
+      case 'apply_changes': {
+        const changes = parseProposedChanges(args);
+        const changesApplied = applyChangesToSession(session, changes);
+
+        return jsonResult({
+          changes_applied: changesApplied,
+          total_ranges: session.getAllRanges().length,
+        });
+      }
+
+      case 'generate_ics': {
+        const ranges = getRanges(session, args);
+        const calendarName = optionalString(args, 'calendar_name');
+
+        return textResult(generateICS(ranges, { calendarName }));
       }
 
       default:

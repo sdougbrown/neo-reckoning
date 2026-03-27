@@ -261,6 +261,160 @@ describe('handleToolCall', () => {
     expect(parseJsonContent(result)).toEqual([]);
   });
 
+  it('suggests changes without mutating session state', async () => {
+    const session = createLoadedSession();
+
+    const result = await handleToolCall(session, 'suggest_changes', {
+      changes: [
+        {
+          action: 'move',
+          range_id: 'review',
+          updates: {
+            startTime: '10:30',
+            endTime: '11:15',
+          },
+          reason: 'Avoid the standup overlap',
+        },
+      ],
+    });
+
+    const suggestion = parseJsonContent<{
+      before: { score: ScheduleScore; conflicts: number };
+      after: { score: ScheduleScore; conflicts: number };
+      changes_applied: number;
+    }>(result);
+
+    expect(suggestion.changes_applied).toBe(1);
+    expect(suggestion.before.score).toEqual(
+      expect.objectContaining({
+        conflicts: expect.any(Number),
+        freeMinutes: expect.any(Number),
+      }),
+    );
+    expect(suggestion.before.conflicts).toBeGreaterThan(0);
+    expect(suggestion.after.conflicts).toBe(0);
+
+    const dayDetail = await handleToolCall(session, 'day_detail', { date: '2026-03-25' });
+    const detail = parseJsonContent<{ timeSlots: TimeSlot[]; allDayRanges: DayRangeInfo[] }>(dayDetail);
+
+    expect(detail.timeSlots).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          rangeId: 'review',
+          startTime: '09:15',
+          endTime: '10:00',
+        }),
+      ]),
+    );
+  });
+
+  it('applies moved ranges to the current session', async () => {
+    const session = createLoadedSession();
+
+    const applyResult = await handleToolCall(session, 'apply_changes', {
+      changes: [
+        {
+          action: 'move',
+          range_id: 'review',
+          updates: {
+            startTime: '10:30',
+            endTime: '11:15',
+          },
+          reason: 'Avoid the standup overlap',
+        },
+      ],
+    });
+
+    expect(parseJsonContent<{ changes_applied: number; total_ranges: number }>(applyResult)).toEqual({
+      changes_applied: 1,
+      total_ranges: 4,
+    });
+
+    const conflictsResult = await handleToolCall(session, 'find_conflicts', {
+      from: '2026-03-24',
+      to: '2026-03-26',
+    });
+
+    expect(
+      parseJsonContent<
+        Array<{
+          date: string;
+          overlapStart: string | null;
+          overlapEnd: string | null;
+          rangeA: { id: string; label: string };
+          rangeB: { id: string; label: string };
+        }>
+      >(conflictsResult),
+    ).toEqual([]);
+  });
+
+  it('adds new ranges through apply_changes', async () => {
+    const session = createLoadedSession();
+
+    await handleToolCall(session, 'apply_changes', {
+      changes: [
+        {
+          action: 'add',
+          new_range: {
+            id: 'focus',
+            label: 'Focus Time',
+            dates: ['2026-03-26'],
+            startTime: '11:00',
+            endTime: '12:00',
+            duration: 60,
+          },
+          reason: 'Reserve focused work time',
+        },
+      ],
+    });
+
+    const calendarsResult = await handleToolCall(session, 'list_calendars');
+    expect(parseJsonContent<Array<{ id: string; rangeCount: number; labels: string[] }>>(calendarsResult)).toEqual([
+      expect.objectContaining({
+        id: 'work',
+        rangeCount: 5,
+        labels: expect.arrayContaining(['Focus Time']),
+      }),
+    ]);
+  });
+
+  it('removes ranges through apply_changes', async () => {
+    const session = createLoadedSession();
+
+    await handleToolCall(session, 'apply_changes', {
+      changes: [
+        {
+          action: 'remove',
+          range_id: 'holiday',
+          reason: 'Holiday was cancelled',
+        },
+      ],
+    });
+
+    const result = await handleToolCall(session, 'day_detail', {
+      date: '2026-03-21',
+    });
+
+    expect(parseJsonContent<{ timeSlots: TimeSlot[]; allDayRanges: DayRangeInfo[] }>(result)).toEqual({
+      timeSlots: [],
+      allDayRanges: [],
+    });
+  });
+
+  it('generates ICS output from loaded data', async () => {
+    const session = createLoadedSession();
+
+    const result = await handleToolCall(session, 'generate_ics', {
+      calendar_name: 'Work Schedule',
+    });
+    const ics = getTextContent(result);
+
+    expect(ics.startsWith('BEGIN:VCALENDAR')).toBe(true);
+    expect(ics).toContain('BEGIN:VEVENT');
+    expect(ics).toContain('END:VEVENT');
+    expect(ics).toContain('X-WR-CALNAME:Work Schedule');
+  });
+
   it('returns errors for invalid load and expand requests', async () => {
     const session = createLoadedSession();
 
