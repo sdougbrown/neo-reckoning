@@ -34,6 +34,10 @@ describe('buildCalendarEvents', () => {
       to,
     });
 
-    expect(events).toEqual([importedEvent, ...expectedNativeEvents]);
+    expect(events).toEqual(
+      [...expectedNativeEvents, importedEvent].sort(
+        (a, b) => a.start.getTime() - b.start.getTime(),
+      ),
+    );
   });
 });
