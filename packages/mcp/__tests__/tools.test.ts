@@ -10,7 +10,7 @@ import type {
 } from '@neo-reckoning/core';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
-import type { GCalEvent } from '../src/adapters/types.js';
+import type { GCalEvent, MsftGraphEvent } from '../src/adapters/types.js';
 import { handleToolCall } from '../src/server.js';
 import { CalendarSession } from '../src/state.js';
 
@@ -216,6 +216,84 @@ describe('handleToolCall', () => {
       const result = await handleToolCall(session, 'load_calendar', {
         source: 'gcal',
         data: JSON.stringify({ events: [] }),
+      });
+
+      expect(result.isError).toBe(true);
+    });
+  });
+
+  describe('load_calendar with source msft', () => {
+    it('loads blocking events from Microsoft Graph JSON', async () => {
+      const session = new CalendarSession();
+      const msftEvents: MsftGraphEvent[] = [
+        {
+          id: 'msft_001',
+          subject: 'Sprint Planning',
+          isAllDay: false,
+          isCancelled: false,
+          type: 'singleInstance',
+          start: { dateTime: '2026-03-30T09:00:00.0000000', timeZone: 'Eastern Standard Time' },
+          end: { dateTime: '2026-03-30T10:00:00.0000000', timeZone: 'Eastern Standard Time' },
+          showAs: 'busy',
+          responseStatus: { response: 'accepted' },
+        },
+        {
+          id: 'msft_002',
+          subject: 'Working from home',
+          isAllDay: true,
+          isCancelled: false,
+          type: 'singleInstance',
+          start: { dateTime: '2026-03-30T00:00:00.0000000', timeZone: 'Eastern Standard Time' },
+          end: { dateTime: '2026-03-31T00:00:00.0000000', timeZone: 'Eastern Standard Time' },
+          showAs: 'workingElsewhere',
+        },
+        {
+          id: 'msft_003',
+          subject: 'Code Review',
+          isAllDay: false,
+          isCancelled: false,
+          type: 'singleInstance',
+          start: { dateTime: '2026-03-30T14:00:00.0000000', timeZone: 'Pacific Standard Time' },
+          end: { dateTime: '2026-03-30T15:00:00.0000000', timeZone: 'Pacific Standard Time' },
+          showAs: 'busy',
+        },
+        {
+          id: 'msft_004',
+          subject: 'Declined Standup',
+          isAllDay: false,
+          isCancelled: false,
+          type: 'singleInstance',
+          start: { dateTime: '2026-03-30T09:30:00.0000000', timeZone: 'Eastern Standard Time' },
+          end: { dateTime: '2026-03-30T10:00:00.0000000', timeZone: 'Eastern Standard Time' },
+          showAs: 'busy',
+          responseStatus: { response: 'declined' },
+        },
+      ];
+
+      const result = await handleToolCall(session, 'load_calendar', {
+        source: 'msft',
+        data: JSON.stringify(msftEvents),
+        id: 'bob',
+      });
+
+      const body = parseJsonContent<{ ranges_loaded: number; calendar_id: string }>(result);
+      expect(body.ranges_loaded).toBe(2);
+      expect(body.calendar_id).toBe('bob');
+
+      const loaded = session.calendars.get('bob')!;
+      expect(loaded.source).toBe('msft');
+      expect(loaded.ranges).toHaveLength(2);
+      expect(loaded.ranges[0].label).toBe('Sprint Planning');
+      expect(loaded.ranges[0].timezone).toBe('America/New_York');
+      expect(loaded.ranges[1].label).toBe('Code Review');
+      expect(loaded.ranges[1].timezone).toBe('America/Los_Angeles');
+    });
+
+    it('rejects non-array msft data', async () => {
+      const session = new CalendarSession();
+      const result = await handleToolCall(session, 'load_calendar', {
+        source: 'msft',
+        data: JSON.stringify({ value: [] }),
       });
 
       expect(result.isError).toBe(true);
@@ -1100,6 +1178,6 @@ describe('handleToolCall', () => {
     });
 
     expect(invalidLoad.isError).toBe(true);
-    expect(getTextContent(invalidLoad)).toContain('"source" must be "ics", "ranges", or "gcal".');
+    expect(getTextContent(invalidLoad)).toContain('"source" must be "ics", "ranges", "gcal", or "msft".');
   });
 });

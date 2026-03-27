@@ -17,7 +17,8 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 import { gcalEventsToDateRanges } from './adapters/gcal.js';
-import type { GCalEvent } from './adapters/types.js';
+import { msftEventsToDateRanges } from './adapters/msft.js';
+import type { GCalEvent, MsftGraphEvent } from './adapters/types.js';
 import { CalendarSession } from './state.js';
 
 const SERVER_INSTRUCTIONS = `Calendar computation tools powered by neo-reckoning. Accurate RRULE expansion, timezone math, conflict detection, and schedule optimization.
@@ -29,6 +30,7 @@ LOADING DATA:
 - File on disk → use load_calendar_file (pass the path, server reads the file directly — never read .ics files into the conversation yourself)
 - Data from another MCP tool or pasted text → use load_calendar with source "ics" or "ranges"
 - Google Calendar data → use load_calendar with source "gcal" and pass the raw JSON array from gcal_list_events. The server auto-filters (transparent, declined, working-location events excluded) and converts to DateRange format.
+- Microsoft Outlook / Office 365 data → use load_calendar with source "msft" and pass the raw JSON array from Microsoft Graph Calendar API. The server auto-filters (free, workingElsewhere, declined, cancelled events excluded), maps Windows timezones to IANA, and converts to DateRange format.
 - Load multiple calendars to analyze them together. Data persists for the session — load once, query many times.
 - load_calendar returns effective_window showing what dates were loaded and sample_labels showing what events were found. Use effective_window to know what date range to query.
 - The server auto-detects the right time window for historical calendars (e.g. a past school year). You do not need to guess the window.
@@ -110,14 +112,14 @@ export const TOOLS: Tool[] = [
       properties: {
         source: {
           type: 'string',
-          enum: ['ics', 'ranges', 'gcal'],
+          enum: ['ics', 'ranges', 'gcal', 'msft'],
           description:
-            'Whether data contains .ics text, a JSON DateRange array, or a JSON array from Google Calendar MCP gcal_list_events.',
+            'Data format: "ics" for .ics text, "ranges" for JSON DateRange array, "gcal" for Google Calendar MCP JSON, "msft" for Microsoft Graph Calendar API JSON.',
         },
         data: {
           type: 'string',
           description:
-            'For source "ics": raw .ics calendar text. For source "ranges": JSON DateRange array (example: [{"id":"mtg1","label":"Team Sync","fromDate":"2026-03-30","toDate":"2026-03-30","startTime":"09:00","endTime":"10:00"}]). NOTE: use fromDate/toDate/startTime/endTime — NOT start/end. For source "gcal": JSON array from Google Calendar MCP gcal_list_events — events are auto-filtered (declined, transparent, working-location excluded) and converted to DateRange format.',
+            'For source "ics": raw .ics calendar text. For source "ranges": JSON DateRange array (example: [{"id":"mtg1","label":"Team Sync","fromDate":"2026-03-30","toDate":"2026-03-30","startTime":"09:00","endTime":"10:00"}]). NOTE: use fromDate/toDate/startTime/endTime — NOT start/end. For source "gcal": JSON array from Google Calendar MCP gcal_list_events — events are auto-filtered (declined, transparent, working-location excluded) and converted to DateRange format. For source "msft": JSON array from Microsoft Graph Calendar API list events endpoint — events are auto-filtered (free, workingElsewhere, declined, cancelled, seriesMaster excluded) and Windows timezones are mapped to IANA.',
         },
         id: {
           type: 'string',
@@ -1260,7 +1262,7 @@ function buildLoadResponse(
   session: CalendarSession,
   ranges: DateRange[],
   calendarId: string,
-  source: 'ics' | 'ranges' | 'gcal',
+  source: 'ics' | 'ranges' | 'gcal' | 'msft',
   effectiveWindow: { from: Date; to: Date },
   detectedWindow: { from: Date; to: Date } | null,
 ): CallToolResult {
@@ -1295,8 +1297,8 @@ export async function handleToolCall(
         const windowFrom = optionalString(args, 'window_from');
         const windowTo = optionalString(args, 'window_to');
 
-        if (source !== 'ics' && source !== 'ranges' && source !== 'gcal') {
-          throw new Error('"source" must be "ics", "ranges", or "gcal".');
+        if (source !== 'ics' && source !== 'ranges' && source !== 'gcal' && source !== 'msft') {
+          throw new Error('"source" must be "ics", "ranges", "gcal", or "msft".');
         }
 
         if ((windowFrom && !windowTo) || (!windowFrom && windowTo)) {
@@ -1325,6 +1327,16 @@ export async function handleToolCall(
 
           const ranges = gcalEventsToDateRanges(parsed as GCalEvent[]);
           return buildLoadResponse(session, ranges, calendarId, 'gcal', requestedWindow, null);
+        }
+
+        if (source === 'msft') {
+          const parsed = JSON.parse(data) as unknown;
+          if (!Array.isArray(parsed)) {
+            throw new Error('Microsoft Graph JSON must decode to an array of events.');
+          }
+
+          const ranges = msftEventsToDateRanges(parsed as MsftGraphEvent[]);
+          return buildLoadResponse(session, ranges, calendarId, 'msft', requestedWindow, null);
         }
 
         const parsed = JSON.parse(data) as unknown;
