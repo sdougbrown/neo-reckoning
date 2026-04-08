@@ -1,6 +1,6 @@
 # Core Performance Benchmarks
 
-This file tracks benchmark and validation results for performance work in `@neo-reckoning/core`.
+This file tracks benchmark and validation results for performance work in `@daywatch/cal`.
 
 ## Environment
 
@@ -11,7 +11,7 @@ This file tracks benchmark and validation results for performance work in `@neo-
 
 ## Commands
 
-- Build + benchmark: `yarn workspace @neo-reckoning/core bench`
+- Build + benchmark: `yarn workspace @daywatch/cal bench`
 - Direct benchmark rerun: `node ./scripts/benchmark.mjs`
 - Core tests: `NODE_OPTIONS='--experimental-vm-modules' ../../node_modules/.bin/jest --watchman=false`
 

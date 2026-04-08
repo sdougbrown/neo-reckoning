@@ -1,6 +1,6 @@
-import { formatDate, parseDate } from '@neo-reckoning/core';
+import { formatDate, parseDate } from '@daywatch/cal';
 
-import type { DateRange } from '@neo-reckoning/core';
+import type { DateRange } from '@daywatch/cal';
 
 import type { GCalAdapterOptions, GCalEvent } from './types.js';
 

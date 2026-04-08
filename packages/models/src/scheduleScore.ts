@@ -1,5 +1,5 @@
-import { RangeEvaluator, scoreSchedule } from '@neo-reckoning/core';
-import type { DateRange, ScheduleScore } from '@neo-reckoning/core';
+import { RangeEvaluator, scoreSchedule } from '@daywatch/cal';
+import type { DateRange, ScheduleScore } from '@daywatch/cal';
 
 export interface ScheduleScoreModelConfig {
   ranges: DateRange[];

@@ -1,7 +1,7 @@
 import { createMemo, type Accessor } from 'solid-js';
-import { buildConflictsModel } from '@neo-reckoning/models';
-import type { ConflictsModelConfig } from '@neo-reckoning/models';
-import type { Conflict } from '@neo-reckoning/core';
+import { buildConflictsModel } from '@daywatch/cal-models';
+import type { ConflictsModelConfig } from '@daywatch/cal-models';
+import type { Conflict } from '@daywatch/cal';
 import { toAccessor, type MaybeAccessor } from './utils.js';
 
 export function createConflicts(

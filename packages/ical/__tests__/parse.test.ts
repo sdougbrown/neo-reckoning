@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 
 import { jest } from '@jest/globals';
-import type { DateRange } from '@neo-reckoning/core';
+import type { DateRange } from '@daywatch/cal';
 
 import { detectDataWindow, parseICS } from '../src/parse.js';
 

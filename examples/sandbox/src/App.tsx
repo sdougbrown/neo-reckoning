@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { DateRange } from '@neo-reckoning/core';
-import type { DateSelection, TimeSelection } from '@neo-reckoning/models';
-import { useCalendarEvents } from '@neo-reckoning/react';
+import type { DateRange } from '@daywatch/cal';
+import type { DateSelection, TimeSelection } from '@daywatch/cal-models';
+import { useCalendarEvents } from '@daywatch/cal-react';
 import { DatePicker } from '../../react/DatePicker.js';
 import { RangePicker } from '../../react/RangePicker.js';
 import { TimePicker } from '../../react/TimePicker.js';
@@ -96,7 +96,7 @@ export function App() {
   return (
     <main className="sandbox">
       <header className="sandbox__header">
-        <h1>neo-reckoning sandbox</h1>
+        <h1>daywatch-cal sandbox</h1>
         <p>Reference implementations for date selection, time selection, and full range composition.</p>
       </header>
 

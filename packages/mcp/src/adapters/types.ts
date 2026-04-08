@@ -1,4 +1,4 @@
-import type { DateRange } from '@neo-reckoning/core';
+import type { DateRange } from '@daywatch/cal';
 
 /** Google Calendar event as returned by gcal_list_events (condensed format). */
 export interface GCalEvent {

@@ -1,5 +1,5 @@
-import { RangeEvaluator, expandToEvents } from '@neo-reckoning/core';
-import type { CalendarEvent, DateRange } from '@neo-reckoning/core';
+import { RangeEvaluator, expandToEvents } from '@daywatch/cal';
+import type { CalendarEvent, DateRange } from '@daywatch/cal';
 import { buildCalendarEvents } from '../src/calendarEvents.js';
 
 describe('buildCalendarEvents', () => {

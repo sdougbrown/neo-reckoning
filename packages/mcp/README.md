@@ -1,6 +1,6 @@
-# @neo-reckoning/mcp
+# @daywatch/cal-mcp
 
-MCP server for calendar computation. Analyze schedules, find conflicts, free time, and suggest optimizations — powered by @neo-reckoning/core.
+MCP server for calendar computation. Analyze schedules, find conflicts, free time, and suggest optimizations — powered by @daywatch/cal.
 
 Works with any MCP client that supports stdio transport, including Claude Desktop, Claude Code, Codex, and similar tools.
 
@@ -19,7 +19,7 @@ Neo-reckoning MCP exposes calendar analysis and schedule optimization as MCP too
 Run the server over stdio:
 
 ```bash
-npx @neo-reckoning/mcp
+npx @daywatch/cal-mcp
 ```
 
 Your MCP client will start the process and communicate over stdin/stdout.
@@ -33,9 +33,9 @@ Add this to `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "neo-reckoning": {
+    "daywatch-cal": {
       "command": "npx",
-      "args": ["-y", "@neo-reckoning/mcp"],
+      "args": ["-y", "@daywatch/cal-mcp"],
       "env": {}
     }
   }
@@ -49,9 +49,9 @@ Add this to your project `.mcp.json`:
 ```json
 {
   "mcpServers": {
-    "neo-reckoning": {
+    "daywatch-cal": {
       "command": "npx",
-      "args": ["-y", "@neo-reckoning/mcp"],
+      "args": ["-y", "@daywatch/cal-mcp"],
       "env": {}
     }
   }
@@ -65,7 +65,7 @@ Add this to `~/.codex/config.toml`:
 ```toml
 [mcp_servers.neo_reckoning]
 command = "npx"
-args = ["-y", "@neo-reckoning/mcp"]
+args = ["-y", "@daywatch/cal-mcp"]
 ```
 
 ## Tools

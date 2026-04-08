@@ -1,7 +1,7 @@
 import { createMemo, type Accessor } from 'solid-js';
-import { buildSpansModel } from '@neo-reckoning/models';
-import type { SpansModelConfig } from '@neo-reckoning/models';
-import type { SpanInfo } from '@neo-reckoning/core';
+import { buildSpansModel } from '@daywatch/cal-models';
+import type { SpansModelConfig } from '@daywatch/cal-models';
+import type { SpanInfo } from '@daywatch/cal';
 import { toAccessor, type MaybeAccessor } from './utils.js';
 
 export function createSpans(

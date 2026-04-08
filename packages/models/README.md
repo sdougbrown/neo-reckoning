@@ -1,16 +1,16 @@
-# @neo-reckoning/models
+# @daywatch/cal-models
 
-Framework-neutral derived models and controller helpers built on top of [@neo-reckoning/core](https://www.npmjs.com/package/@neo-reckoning/core).
+Framework-neutral derived models and controller helpers built on top of [@daywatch/cal](https://www.npmjs.com/package/@daywatch/cal).
 
 This package is intended for:
 
-- adapter packages like `@neo-reckoning/react`
+- adapter packages like `@daywatch/cal-react`
 - advanced consumers who want ergonomic pure functions without committing to a UI framework adapter
 
 ## Install
 
 ```
-npm install @neo-reckoning/models @neo-reckoning/core
+npm install @daywatch/cal-models @daywatch/cal
 ```
 
 ## What it provides
@@ -24,7 +24,7 @@ npm install @neo-reckoning/models @neo-reckoning/core
 ## Example
 
 ```typescript
-import { buildCalendarModel, createCalendarController } from '@neo-reckoning/models';
+import { buildCalendarModel, createCalendarController } from '@daywatch/cal-models';
 
 const model = buildCalendarModel({
   focusDate: '2026-03-15',
@@ -43,8 +43,8 @@ const controller = createCalendarController({
 `updateDateSelection(selection, action, config)` is a pure reducer for controlled date-range selection. It works with the `DateSelection`, `DateSelectionAction`, and `DateSelectionConfig` types exported by this package.
 
 ```typescript
-import { updateDateSelection } from '@neo-reckoning/models';
-import type { DateSelection } from '@neo-reckoning/models';
+import { updateDateSelection } from '@daywatch/cal-models';
+import type { DateSelection } from '@daywatch/cal-models';
 
 let selection: DateSelection = {
   start: null,
@@ -76,7 +76,7 @@ The first click sets `start`, hover updates `preview`, and the second click comp
 import {
   createIsDateBlocked,
   updateDateSelection,
-} from '@neo-reckoning/models';
+} from '@daywatch/cal-models';
 
 const isDateBlocked = createIsDateBlocked(existingRanges, {
   userTimezone: 'America/New_York',
@@ -93,7 +93,7 @@ const next = updateDateSelection(selection, {
 `selectionToDateRange(selection, template)` converts a completed selection into a `DateRange`.
 
 ```typescript
-import { selectionToDateRange } from '@neo-reckoning/models';
+import { selectionToDateRange } from '@daywatch/cal-models';
 
 const range = selectionToDateRange(selection, {
   label: 'Vacation',
@@ -107,8 +107,8 @@ If `start` or `end` is missing, it returns `null`.
 `updateTimeSelection(selection, action, config)` is the time-slot equivalent. It works with the `TimeSelection`, `TimeSelectionAction`, and `TimeSelectionConfig` types and snaps incoming times to the configured interval before applying reducer logic.
 
 ```typescript
-import { updateTimeSelection } from '@neo-reckoning/models';
-import type { TimeSelection } from '@neo-reckoning/models';
+import { updateTimeSelection } from '@daywatch/cal-models';
+import type { TimeSelection } from '@daywatch/cal-models';
 
 let selection: TimeSelection = {
   date: '2026-04-10',
@@ -145,7 +145,7 @@ selection = updateTimeSelection(selection, {
 `snapToInterval(time, intervalMinutes)` is available separately when you want the same snapping behavior outside the reducer.
 
 ```typescript
-import { snapToInterval } from '@neo-reckoning/models';
+import { snapToInterval } from '@daywatch/cal-models';
 
 snapToInterval('09:10', 30);
 // => '09:00'

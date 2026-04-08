@@ -1,16 +1,16 @@
-# @neo-reckoning/solid
+# @daywatch/cal-solid
 
-Reactive Solid primitives for calendar state management. Built on [@neo-reckoning/core](https://www.npmjs.com/package/@neo-reckoning/core) and [@neo-reckoning/models](https://www.npmjs.com/package/@neo-reckoning/models).
+Reactive Solid primitives for calendar state management. Built on [@daywatch/cal](https://www.npmjs.com/package/@daywatch/cal) and [@daywatch/cal-models](https://www.npmjs.com/package/@daywatch/cal-models).
 
 This package exposes idiomatic `create*` helpers backed by Solid's reactive system.
 
 ## Install
 
 ```
-npm install @neo-reckoning/solid @neo-reckoning/core solid-js
+npm install @daywatch/cal-solid @daywatch/cal solid-js
 ```
 
-If you want framework-neutral derived helpers without reactive wrappers, use `@neo-reckoning/models` directly.
+If you want framework-neutral derived helpers without reactive wrappers, use `@daywatch/cal-models` directly.
 
 This package also includes `createDateSelection` and `createTimeSelection` for controlled date-range and time-block interactions.
 

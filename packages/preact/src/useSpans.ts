@@ -1,7 +1,7 @@
 import { useMemo } from 'preact/hooks';
-import { buildSpansModel } from '@neo-reckoning/models';
-import type { SpansModelConfig } from '@neo-reckoning/models';
-import type { SpanInfo } from '@neo-reckoning/core';
+import { buildSpansModel } from '@daywatch/cal-models';
+import type { SpansModelConfig } from '@daywatch/cal-models';
+import type { SpanInfo } from '@daywatch/cal';
 
 export interface UseSpansConfig extends SpansModelConfig {}
 

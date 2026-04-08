@@ -1,6 +1,6 @@
 import ICAL from 'ical.js';
 
-import type { DateRange } from '@neo-reckoning/core';
+import type { DateRange } from '@daywatch/cal';
 
 import { DEFAULT_PRODID } from '../src/constants.js';
 import { generateICS } from '../src/generate.js';

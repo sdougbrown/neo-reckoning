@@ -1,4 +1,4 @@
-export const DEFAULT_PRODID = '-//neo-reckoning//ical//EN';
+export const DEFAULT_PRODID = '-//daywatch-cal//ical//EN';
 
 export const ALL_WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 

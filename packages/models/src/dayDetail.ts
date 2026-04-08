@@ -1,5 +1,5 @@
-import { RangeEvaluator } from '@neo-reckoning/core';
-import type { DateRange, TimeSlot, DayRangeInfo } from '@neo-reckoning/core';
+import { RangeEvaluator } from '@daywatch/cal';
+import type { DateRange, TimeSlot, DayRangeInfo } from '@daywatch/cal';
 
 export interface DayDetailModel {
   /** Sub-day time slots for the given day */

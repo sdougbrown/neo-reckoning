@@ -1,4 +1,4 @@
-import type { DateRange } from '@neo-reckoning/core';
+import type { DateRange } from '@daywatch/cal';
 
 import { subtractOneDay } from './gcal.js';
 import type { MsftAdapterOptions, MsftGraphEvent } from './types.js';

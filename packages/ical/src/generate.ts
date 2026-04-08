@@ -1,4 +1,4 @@
-import type { DateRange } from '@neo-reckoning/core';
+import type { DateRange } from '@daywatch/cal';
 import ICAL from 'ical.js';
 
 import { DEFAULT_PRODID } from './constants.js';

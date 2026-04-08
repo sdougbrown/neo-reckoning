@@ -1,9 +1,9 @@
 import { createMemo, type Accessor } from 'solid-js';
-import { updateDateSelection } from '@neo-reckoning/models';
+import { updateDateSelection } from '@daywatch/cal-models';
 import type {
   DateSelection,
   DateSelectionConfig,
-} from '@neo-reckoning/models';
+} from '@daywatch/cal-models';
 import { toAccessor, type MaybeAccessor } from './utils.js';
 
 export interface CreateDateSelectionConfig extends DateSelectionConfig {

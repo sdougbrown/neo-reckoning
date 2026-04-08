@@ -1,5 +1,5 @@
-import { RangeEvaluator } from '@neo-reckoning/core';
-import type { DateRange, SpanInfo } from '@neo-reckoning/core';
+import { RangeEvaluator } from '@daywatch/cal';
+import type { DateRange, SpanInfo } from '@daywatch/cal';
 
 export interface SpansModelConfig {
   /** DateRanges to compute spans for */

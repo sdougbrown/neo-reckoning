@@ -1,5 +1,5 @@
-import { TimelineGrid } from '@neo-reckoning/core';
-import type { CalendarEvent } from '@neo-reckoning/core';
+import { TimelineGrid } from '@daywatch/cal';
+import type { CalendarEvent } from '@daywatch/cal';
 import { buildTimelineModel } from '../src/timeline.js';
 
 describe('buildTimelineModel', () => {

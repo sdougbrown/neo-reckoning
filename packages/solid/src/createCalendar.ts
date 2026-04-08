@@ -2,9 +2,9 @@ import { createMemo, type Accessor } from 'solid-js';
 import {
   buildCalendarModel,
   createCalendarController,
-} from '@neo-reckoning/models';
-import type { CalendarModelConfig } from '@neo-reckoning/models';
-import type { Month } from '@neo-reckoning/core';
+} from '@daywatch/cal-models';
+import type { CalendarModelConfig } from '@daywatch/cal-models';
+import type { Month } from '@daywatch/cal';
 import { toAccessor, type MaybeAccessor } from './utils.js';
 
 export interface CreateCalendarConfig extends CalendarModelConfig {

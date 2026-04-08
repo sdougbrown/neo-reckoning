@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { buildCalendarEvents } from '@neo-reckoning/models';
-import type { CalendarEventsModelConfig } from '@neo-reckoning/models';
-import type { CalendarEvent } from '@neo-reckoning/core';
+import { buildCalendarEvents } from '@daywatch/cal-models';
+import type { CalendarEventsModelConfig } from '@daywatch/cal-models';
+import type { CalendarEvent } from '@daywatch/cal';
 
 export interface UseCalendarEventsConfig extends CalendarEventsModelConfig {}
 

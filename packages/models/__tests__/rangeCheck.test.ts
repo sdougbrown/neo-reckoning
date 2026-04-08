@@ -1,5 +1,5 @@
-import { RangeEvaluator } from '@neo-reckoning/core';
-import type { DateRange } from '@neo-reckoning/core';
+import { RangeEvaluator } from '@daywatch/cal';
+import type { DateRange } from '@daywatch/cal';
 import { createRangeCheck } from '../src/rangeCheck.js';
 
 describe('createRangeCheck', () => {

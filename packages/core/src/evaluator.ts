@@ -38,7 +38,7 @@ function buildLookup(size: number, values: readonly number[]): Uint8Array {
 }
 
 /**
- * RangeEvaluator — the core computation engine of neo-reckoning.
+ * RangeEvaluator — the core computation engine of daywatch-cal.
  *
  * Determines whether dates/times fall within a DateRange and expands
  * ranges into concrete occurrences within a given window.

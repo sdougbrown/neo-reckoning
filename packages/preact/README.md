@@ -1,16 +1,16 @@
-# @neo-reckoning/preact
+# @daywatch/cal-preact
 
-Headless Preact hooks for calendar state management. Built on [@neo-reckoning/core](https://www.npmjs.com/package/@neo-reckoning/core) and [@neo-reckoning/models](https://www.npmjs.com/package/@neo-reckoning/models).
+Headless Preact hooks for calendar state management. Built on [@daywatch/cal](https://www.npmjs.com/package/@daywatch/cal) and [@daywatch/cal-models](https://www.npmjs.com/package/@daywatch/cal-models).
 
 All hooks return data structures only. No DOM, no components, no CSS.
 
 ## Install
 
 ```
-npm install @neo-reckoning/preact @neo-reckoning/core preact
+npm install @daywatch/cal-preact @daywatch/cal preact
 ```
 
-If you want framework-neutral derived helpers without hooks, use `@neo-reckoning/models` directly.
+If you want framework-neutral derived helpers without hooks, use `@daywatch/cal-models` directly.
 
 This package also includes controlled selection hooks: `useDateSelection` for date-range picking and `useTimeSelection` for time-block picking.
 

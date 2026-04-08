@@ -13,7 +13,7 @@ export type DisplayType = 'auto' | 'span' | 'dot' | 'fill' | 'chip' | 'block';
 
 /**
  * A DateRange defines a set of dates and/or times using either explicit values
- * or recurrence patterns. This is the core data model of neo-reckoning,
+ * or recurrence patterns. This is the core data model of daywatch-cal,
  * carried forward from the original Reckoning library and extended with
  * sub-day time support.
  */
@@ -80,7 +80,7 @@ export interface DateRange {
    */
   flexibility?: number;
 
-  /** Opaque metadata — neo-reckoning passes through, agent-facing code interprets. */
+  /** Opaque metadata — daywatch-cal passes through, agent-facing code interprets. */
   metadata?: Record<string, unknown>;
 }
 
@@ -301,7 +301,7 @@ export interface TimelineGridConfig {
 }
 
 /**
- * Pluggable cache adapter for @neo-reckoning/ical.
+ * Pluggable cache adapter for @daywatch/cal-ical.
  * Supports both sync (web localStorage) and async (React Native AsyncStorage) implementations.
  */
 export interface CacheAdapter {

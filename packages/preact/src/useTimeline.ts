@@ -1,7 +1,7 @@
 import { useMemo } from 'preact/hooks';
-import { buildTimelineModel } from '@neo-reckoning/models';
-import type { TimelineModelConfig } from '@neo-reckoning/models';
-import type { TimelineSlot } from '@neo-reckoning/core';
+import { buildTimelineModel } from '@daywatch/cal-models';
+import type { TimelineModelConfig } from '@daywatch/cal-models';
+import type { TimelineSlot } from '@daywatch/cal';
 
 export interface UseTimelineConfig extends TimelineModelConfig {}
 

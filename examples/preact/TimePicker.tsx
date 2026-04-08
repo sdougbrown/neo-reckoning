@@ -1,6 +1,6 @@
 // Example - copy and adapt. Unstyled by default. Target data-* attributes and class names with your own CSS.
 import { useMemo } from 'preact/hooks';
-import { useFreeSlots, useTimeline, useTimeSelection } from '@neo-reckoning/preact';
+import { useFreeSlots, useTimeline, useTimeSelection } from '@daywatch/cal-preact';
 import type { CalendarEvent, DateRange, TimeSelection } from './shared/types.js';
 
 export interface TimePickerProps {

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { buildScheduleScoreModel } from '@neo-reckoning/models';
-import type { ScheduleScoreModelConfig } from '@neo-reckoning/models';
-import type { ScheduleScore } from '@neo-reckoning/core';
+import { buildScheduleScoreModel } from '@daywatch/cal-models';
+import type { ScheduleScoreModelConfig } from '@daywatch/cal-models';
+import type { ScheduleScore } from '@daywatch/cal';
 
 export interface UseScheduleScoreConfig extends ScheduleScoreModelConfig {}
 

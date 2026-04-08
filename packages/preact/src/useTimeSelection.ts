@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from 'preact/hooks';
-import { updateTimeSelection } from '@neo-reckoning/models';
+import { updateTimeSelection } from '@daywatch/cal-models';
 import type {
   TimeSelection,
   TimeSelectionConfig,
-} from '@neo-reckoning/models';
+} from '@daywatch/cal-models';
 
 export interface UseTimeSelectionConfig extends TimeSelectionConfig {
   onSelectionChange: (selection: TimeSelection) => void;

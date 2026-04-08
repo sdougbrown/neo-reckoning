@@ -1,5 +1,5 @@
 /**
- * Internal time/date utilities for neo-reckoning.
+ * Internal time/date utilities for daywatch-cal.
  * Uses Intl.DateTimeFormat for timezone conversion — no external dependencies.
  */
 

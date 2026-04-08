@@ -1,5 +1,5 @@
-import { RangeEvaluator } from '@neo-reckoning/core';
-import type { DateRange, FreeSlot } from '@neo-reckoning/core';
+import { RangeEvaluator } from '@daywatch/cal';
+import type { DateRange, FreeSlot } from '@daywatch/cal';
 
 export interface FreeSlotsModelConfig {
   ranges: DateRange[];

@@ -1,4 +1,4 @@
-# @neo-reckoning/core
+# @daywatch/cal
 
 Headless calendar state management library. Zero dependencies. Framework-agnostic.
 
@@ -20,14 +20,14 @@ Neo-reckoning is a **computation library**, not a UI library. It tells you *what
 ## Install
 
 ```
-npm install @neo-reckoning/core
+npm install @daywatch/cal
 ```
 
 ## Quick start
 
 ```typescript
-import { RangeEvaluator, CalendarGrid } from '@neo-reckoning/core';
-import type { DateRange } from '@neo-reckoning/core';
+import { RangeEvaluator, CalendarGrid } from '@daywatch/cal';
+import type { DateRange } from '@daywatch/cal';
 
 // Define some ranges
 const ranges: DateRange[] = [

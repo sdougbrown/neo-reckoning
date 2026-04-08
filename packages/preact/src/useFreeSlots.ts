@@ -1,7 +1,7 @@
 import { useMemo } from 'preact/hooks';
-import { buildFreeSlotsModel } from '@neo-reckoning/models';
-import type { FreeSlotsModelConfig } from '@neo-reckoning/models';
-import type { FreeSlot } from '@neo-reckoning/core';
+import { buildFreeSlotsModel } from '@daywatch/cal-models';
+import type { FreeSlotsModelConfig } from '@daywatch/cal-models';
+import type { FreeSlot } from '@daywatch/cal';
 
 export function useFreeSlots(config: FreeSlotsModelConfig): FreeSlot[] {
   const { ranges, date, minDuration, dayStart, dayEnd, userTimezone } = config;

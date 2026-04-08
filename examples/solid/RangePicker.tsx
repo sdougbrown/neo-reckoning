@@ -1,7 +1,7 @@
 // Example - copy and adapt. Unstyled by default. Target data-* attributes and class names with your own CSS.
 import { Show, createEffect, createMemo, createSignal } from 'solid-js';
-import { selectionToDateRange } from '@neo-reckoning/models';
-import { createCalendarEvents } from '@neo-reckoning/solid';
+import { selectionToDateRange } from '@daywatch/cal-models';
+import { createCalendarEvents } from '@daywatch/cal-solid';
 import { DatePicker } from './DatePicker.js';
 import { TimePicker } from './TimePicker.js';
 import type {

@@ -1,5 +1,5 @@
-import { CalendarGrid } from '@neo-reckoning/core';
-import type { DateRange, Month, ViewFidelity } from '@neo-reckoning/core';
+import { CalendarGrid } from '@daywatch/cal';
+import type { DateRange, Month, ViewFidelity } from '@daywatch/cal';
 
 export interface CalendarModelConfig {
   /** Current focus date (YYYY-MM-DD) */

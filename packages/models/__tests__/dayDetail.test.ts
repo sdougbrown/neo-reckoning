@@ -1,4 +1,4 @@
-import type { DateRange } from '@neo-reckoning/core';
+import type { DateRange } from '@daywatch/cal';
 import { buildDayDetailModel } from '../src/dayDetail.js';
 
 describe('buildDayDetailModel', () => {

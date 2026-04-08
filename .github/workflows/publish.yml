@@ -130,7 +130,7 @@ jobs:
       - name: Build
         run: yarn turbo run build
 
-      - name: Publish @neo-reckoning/core
+      - name: Publish @daywatch/cal
         if: needs.detect-version-changes.outputs.core_changed == 'true'
         working-directory: packages/core
         run: |
@@ -140,7 +140,7 @@ jobs:
           yarn pack -o package.tgz
           npm publish package.tgz --provenance --access public --tag "$TAG"
 
-      - name: Publish @neo-reckoning/models
+      - name: Publish @daywatch/cal-models
         if: needs.detect-version-changes.outputs.models_changed == 'true'
         working-directory: packages/models
         run: |
@@ -150,7 +150,7 @@ jobs:
           yarn pack -o package.tgz
           npm publish package.tgz --provenance --access public --tag "$TAG"
 
-      - name: Publish @neo-reckoning/react
+      - name: Publish @daywatch/cal-react
         if: needs.detect-version-changes.outputs.react_changed == 'true'
         working-directory: packages/react
         run: |
@@ -160,7 +160,7 @@ jobs:
           yarn pack -o package.tgz
           npm publish package.tgz --provenance --access public --tag "$TAG"
 
-      - name: Publish @neo-reckoning/preact
+      - name: Publish @daywatch/cal-preact
         if: needs.detect-version-changes.outputs.preact_changed == 'true'
         working-directory: packages/preact
         run: |
@@ -170,7 +170,7 @@ jobs:
           yarn pack -o package.tgz
           npm publish package.tgz --provenance --access public --tag "$TAG"
 
-      - name: Publish @neo-reckoning/solid
+      - name: Publish @daywatch/cal-solid
         if: needs.detect-version-changes.outputs.solid_changed == 'true'
         working-directory: packages/solid
         run: |
@@ -180,7 +180,7 @@ jobs:
           yarn pack -o package.tgz
           npm publish package.tgz --provenance --access public --tag "$TAG"
 
-      - name: Publish @neo-reckoning/ical
+      - name: Publish @daywatch/cal-ical
         if: needs.detect-version-changes.outputs.ical_changed == 'true'
         working-directory: packages/ical
         run: |
@@ -190,7 +190,7 @@ jobs:
           yarn pack -o package.tgz
           npm publish package.tgz --provenance --access public --tag "$TAG"
 
-      - name: Publish @neo-reckoning/mcp
+      - name: Publish @daywatch/cal-mcp
         if: needs.detect-version-changes.outputs.mcp_changed == 'true'
         working-directory: packages/mcp
         run: |

@@ -1,5 +1,5 @@
-import { RangeEvaluator } from '@neo-reckoning/core';
-import type { DateRange, Conflict } from '@neo-reckoning/core';
+import { RangeEvaluator } from '@daywatch/cal';
+import type { DateRange, Conflict } from '@daywatch/cal';
 
 export interface ConflictsModelConfig {
   /** DateRanges to check for conflicts */

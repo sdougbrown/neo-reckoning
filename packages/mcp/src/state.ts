@@ -1,5 +1,5 @@
-import type { DateRange } from '@neo-reckoning/core';
-import { RangeEvaluator } from '@neo-reckoning/core';
+import type { DateRange } from '@daywatch/cal';
+import { RangeEvaluator } from '@daywatch/cal';
 
 export interface LoadedCalendar {
   ranges: DateRange[];

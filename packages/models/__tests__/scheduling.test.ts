@@ -1,5 +1,5 @@
-import { RangeEvaluator, YearGrid, scoreSchedule } from '@neo-reckoning/core';
-import type { DateRange } from '@neo-reckoning/core';
+import { RangeEvaluator, YearGrid, scoreSchedule } from '@daywatch/cal';
+import type { DateRange } from '@daywatch/cal';
 import { buildConflictsModel } from '../src/conflicts.js';
 import { buildFreeSlotsModel } from '../src/freeSlots.js';
 import { buildScheduleScoreModel } from '../src/scheduleScore.js';

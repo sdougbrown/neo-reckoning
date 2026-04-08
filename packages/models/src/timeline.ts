@@ -1,5 +1,5 @@
-import { TimelineGrid } from '@neo-reckoning/core';
-import type { CalendarEvent, TimelineSlot } from '@neo-reckoning/core';
+import { TimelineGrid } from '@daywatch/cal';
+import type { CalendarEvent, TimelineSlot } from '@daywatch/cal';
 
 export interface TimelineModelConfig {
   /** Which day (YYYY-MM-DD) */

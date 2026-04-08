@@ -7,7 +7,7 @@ import type {
   Occurrence,
   ScheduleScore,
   TimeSlot,
-} from '@neo-reckoning/core';
+} from '@daywatch/cal';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
 import type { GCalEvent, MsftGraphEvent } from '../src/adapters/types.js';

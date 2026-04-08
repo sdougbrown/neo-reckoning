@@ -1,7 +1,7 @@
 // Example - copy and adapt. Unstyled by default. Target data-* attributes and class names with your own CSS.
 import { useEffect, useMemo, useState } from 'react';
-import { createIsDateBlocked } from '@neo-reckoning/models';
-import { useCalendar, useDateSelection } from '@neo-reckoning/react';
+import { createIsDateBlocked } from '@daywatch/cal-models';
+import { useCalendar, useDateSelection } from '@daywatch/cal-react';
 import type { DateRange, DateSelection } from './shared/types.js';
 
 export interface DatePickerProps {

@@ -1,9 +1,9 @@
 import { useCallback } from 'preact/hooks';
-import { updateDateSelection } from '@neo-reckoning/models';
+import { updateDateSelection } from '@daywatch/cal-models';
 import type {
   DateSelection,
   DateSelectionConfig,
-} from '@neo-reckoning/models';
+} from '@daywatch/cal-models';
 
 export interface UseDateSelectionConfig extends DateSelectionConfig {
   onSelectionChange: (selection: DateSelection) => void;

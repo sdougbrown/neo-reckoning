@@ -1,7 +1,7 @@
 import { useMemo } from 'preact/hooks';
-import { buildYearGridModel } from '@neo-reckoning/models';
-import type { YearGridModelConfig } from '@neo-reckoning/models';
-import type { YearMonth } from '@neo-reckoning/core';
+import { buildYearGridModel } from '@daywatch/cal-models';
+import type { YearGridModelConfig } from '@daywatch/cal-models';
+import type { YearMonth } from '@daywatch/cal';
 
 export interface UseYearGridConfig extends YearGridModelConfig {}
 

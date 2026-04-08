@@ -1,7 +1,7 @@
 // Example - copy and adapt. Unstyled by default. Target data-* attributes and class names with your own CSS.
 import { For, createEffect, createMemo, createSignal } from 'solid-js';
-import { createIsDateBlocked } from '@neo-reckoning/models';
-import { createCalendar, createDateSelection } from '@neo-reckoning/solid';
+import { createIsDateBlocked } from '@daywatch/cal-models';
+import { createCalendar, createDateSelection } from '@daywatch/cal-solid';
 import type { DateRange, DateSelection } from './shared/types.js';
 
 export interface DatePickerProps {

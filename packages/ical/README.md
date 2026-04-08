@@ -1,27 +1,27 @@
-# @neo-reckoning/ical
+# @daywatch/cal-ical
 
-iCal (.ics) parser and generator for @neo-reckoning/core. Converts VEVENT data to DateRange[] and back.
+iCal (.ics) parser and generator for @daywatch/cal. Converts VEVENT data to DateRange[] and back.
 
-This package parses `.ics` calendar data into neo-reckoning `DateRange[]`, preserves recurrence structure when possible, and generates valid `.ics` output from those ranges.
+This package parses `.ics` calendar data into daywatch-cal `DateRange[]`, preserves recurrence structure when possible, and generates valid `.ics` output from those ranges.
 
 ## What this does
 
 - **Parse VEVENT data** — convert all-day events, timed events, spans, recurrence rules, and exceptions into `DateRange[]`
 - **Generate `.ics` output** — export `DateRange[]` back to `VCALENDAR` / `VEVENT` form
-- **Preserve recurrence structure** — directly map simple RRULE patterns into native neo-reckoning recurrence fields
+- **Preserve recurrence structure** — directly map simple RRULE patterns into native daywatch-cal recurrence fields
 - **Expand complex rules when needed** — fall back to explicit date expansion for recurrence patterns that do not fit the native model
 - **Work in browser and Node** — built on `ical.js`, which runs in both environments
 
 ## Install
 
 ```bash
-npm install @neo-reckoning/ical
+npm install @daywatch/cal-ical
 ```
 
 ## Quick start
 
 ```typescript
-import { detectDataWindow, generateICS, parseICS } from '@neo-reckoning/ical';
+import { detectDataWindow, generateICS, parseICS } from '@daywatch/cal-ical';
 
 const window = {
   from: new Date('2026-03-01T00:00:00'),
@@ -39,7 +39,7 @@ const ics = generateICS(ranges, { calendarName: 'Roundtrip' });
 
 Parses `.ics` text into `DateRange[]` within a time window.
 
-- Single-day, timed, and multi-day VEVENTs become native neo-reckoning ranges
+- Single-day, timed, and multi-day VEVENTs become native daywatch-cal ranges
 - Simple RRULEs map directly to recurrence fields like `everyWeekday`, `everyDate`, and `everyMonth`
 - Complex RRULEs are expanded to explicit `dates` within the requested window
 - `EXDATE` values become `exceptDates`
@@ -84,7 +84,7 @@ Patterns outside those mappings fall back to Tier 2 expansion inside the request
 
 ## Round-trip
 
-`parseICS()` followed by `generateICS()` preserves the parsed `DateRange` structure for supported data. That means ranges can be imported from `.ics`, manipulated in neo-reckoning form, then exported back without flattening simple recurrence into one-off events.
+`parseICS()` followed by `generateICS()` preserves the parsed `DateRange` structure for supported data. That means ranges can be imported from `.ics`, manipulated in daywatch-cal form, then exported back without flattening simple recurrence into one-off events.
 
 This is a structural round-trip, not a byte-for-byte source preservation guarantee.
 

@@ -4,8 +4,8 @@ import type {
   FreeSlot,
   Month,
   TimelineSlot,
-} from '@neo-reckoning/core';
-import type { DateSelection, TimeSelection } from '@neo-reckoning/models';
+} from '@daywatch/cal';
+import type { DateSelection, TimeSelection } from '@daywatch/cal-models';
 
 export type {
   CalendarEvent,

@@ -1,7 +1,7 @@
 import { useMemo } from 'preact/hooks';
-import { buildDayDetailModel } from '@neo-reckoning/models';
-import type { DayDetailModel } from '@neo-reckoning/models';
-import type { DateRange } from '@neo-reckoning/core';
+import { buildDayDetailModel } from '@daywatch/cal-models';
+import type { DayDetailModel } from '@daywatch/cal-models';
+import type { DateRange } from '@daywatch/cal';
 
 export function useDayDetail(
   date: string,

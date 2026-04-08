@@ -1,6 +1,6 @@
 BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//neo-reckoning//ical-fixture//EN
+PRODID:-//daywatch-cal//ical-fixture//EN
 BEGIN:VEVENT
 UID:weekly-class
 SUMMARY:Class

@@ -1,10 +1,10 @@
-import { RangeEvaluator, expandToEvents } from '@neo-reckoning/core';
-import type { DateRange, CalendarEvent } from '@neo-reckoning/core';
+import { RangeEvaluator, expandToEvents } from '@daywatch/cal';
+import type { DateRange, CalendarEvent } from '@daywatch/cal';
 
 export interface CalendarEventsModelConfig {
   /** Native DateRanges from the API */
   ranges: DateRange[];
-  /** Imported events from @neo-reckoning/ical, already CalendarEvent[] */
+  /** Imported events from @daywatch/cal-ical, already CalendarEvent[] */
   importedEvents: CalendarEvent[];
   /** View window start */
   from: Date;

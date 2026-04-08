@@ -1,6 +1,6 @@
 import { createMemo, type Accessor } from 'solid-js';
-import { buildYearGridModel } from '@neo-reckoning/models';
-import type { YearGridModel, YearGridModelConfig } from '@neo-reckoning/models';
+import { buildYearGridModel } from '@daywatch/cal-models';
+import type { YearGridModel, YearGridModelConfig } from '@daywatch/cal-models';
 import { toAccessor, type MaybeAccessor } from './utils.js';
 
 export interface CreateYearGridResult {

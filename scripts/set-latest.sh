@@ -82,7 +82,7 @@ elif [[ "$MODE" == "changed" ]]; then
 else
   # Interactive mode
   echo ""
-  echo -e "  ${C_DBLUE}${C_BOLD}neo-reckoning${C_RESET}  ${C_DIM}${PREV_TAG} → ${CURR_TAG}${C_RESET}"
+  echo -e "  ${C_DBLUE}${C_BOLD}daywatch-cal${C_RESET}  ${C_DIM}${PREV_TAG} → ${CURR_TAG}${C_RESET}"
   echo ""
 
   for pkg in "${ALL_PACKAGES[@]}"; do
@@ -123,7 +123,7 @@ fi
 # Expand short names to full npm package names
 FULL_NAMES=()
 for t in "${TARGETS[@]}"; do
-  FULL_NAMES+=("@neo-reckoning/$t")
+  FULL_NAMES+=("@daywatch-cal/$t")
 done
 
 echo ""

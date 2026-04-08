@@ -1,6 +1,6 @@
 BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//neo-reckoning tests//EN
+PRODID:-//daywatch-cal tests//EN
 BEGIN:VEVENT
 UID:shared-sync
 SUMMARY:Shared Sync

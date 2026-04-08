@@ -1,7 +1,7 @@
 import { createMemo } from 'solid-js';
-import { createRangeCheck as createModelsRangeCheck } from '@neo-reckoning/models';
-import type { RangeCheck } from '@neo-reckoning/models';
-import type { DateRange } from '@neo-reckoning/core';
+import { createRangeCheck as createModelsRangeCheck } from '@daywatch/cal-models';
+import type { RangeCheck } from '@daywatch/cal-models';
+import type { DateRange } from '@daywatch/cal';
 import { toAccessor, type MaybeAccessor } from './utils.js';
 
 export interface CreateRangeCheckConfig {

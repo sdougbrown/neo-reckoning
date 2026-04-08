@@ -1,5 +1,5 @@
-import { YearGrid } from '@neo-reckoning/core';
-import type { DateRange, YearMonth } from '@neo-reckoning/core';
+import { YearGrid } from '@daywatch/cal';
+import type { DateRange, YearMonth } from '@daywatch/cal';
 
 export interface YearGridModelConfig {
   /** The year to generate (e.g. 2026) */

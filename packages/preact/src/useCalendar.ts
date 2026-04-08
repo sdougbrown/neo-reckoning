@@ -2,9 +2,9 @@ import { useMemo, useCallback } from 'preact/hooks';
 import {
   buildCalendarModel,
   createCalendarController,
-} from '@neo-reckoning/models';
-import type { CalendarModelConfig } from '@neo-reckoning/models';
-import type { Month } from '@neo-reckoning/core';
+} from '@daywatch/cal-models';
+import type { CalendarModelConfig } from '@daywatch/cal-models';
+import type { Month } from '@daywatch/cal';
 
 export interface UseCalendarConfig extends CalendarModelConfig {
   onFocusDateChange: (date: string) => void;

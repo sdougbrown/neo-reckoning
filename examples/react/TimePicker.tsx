@@ -1,6 +1,6 @@
 // Example - copy and adapt. Unstyled by default. Target data-* attributes and class names with your own CSS.
 import { useMemo } from 'react';
-import { useFreeSlots, useTimeline, useTimeSelection } from '@neo-reckoning/react';
+import { useFreeSlots, useTimeline, useTimeSelection } from '@daywatch/cal-react';
 import type { CalendarEvent, DateRange, TimeSelection } from './shared/types.js';
 
 export interface TimePickerProps {

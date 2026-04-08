@@ -1,5 +1,5 @@
-import { RangeEvaluator } from '@neo-reckoning/core';
-import type { DateRange, Occurrence } from '@neo-reckoning/core';
+import { RangeEvaluator } from '@daywatch/cal';
+import type { DateRange, Occurrence } from '@daywatch/cal';
 
 export interface RangeCheck {
   /** Check which ranges a datetime falls within */

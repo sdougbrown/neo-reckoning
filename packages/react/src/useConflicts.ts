@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { buildConflictsModel } from '@neo-reckoning/models';
-import type { ConflictsModelConfig } from '@neo-reckoning/models';
-import type { Conflict } from '@neo-reckoning/core';
+import { buildConflictsModel } from '@daywatch/cal-models';
+import type { ConflictsModelConfig } from '@daywatch/cal-models';
+import type { Conflict } from '@daywatch/cal';
 
 export interface UseConflictsConfig extends ConflictsModelConfig {}
 

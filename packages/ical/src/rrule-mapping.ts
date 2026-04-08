@@ -1,4 +1,4 @@
-import type { DateRange } from '@neo-reckoning/core';
+import type { DateRange } from '@daywatch/cal';
 import ICAL from 'ical.js';
 
 import { ALL_WEEKDAYS, ICAL_TO_RANGE_WEEKDAY, RANGE_TO_ICAL_WEEKDAY } from './constants.js';

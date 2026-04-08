@@ -6,8 +6,8 @@ import {
   type DateRange,
   type DayRangeInfo,
   type TimeSlot,
-} from '@neo-reckoning/core';
-import { detectDataWindow, generateICS, parseICS } from '@neo-reckoning/ical';
+} from '@daywatch/cal';
+import { detectDataWindow, generateICS, parseICS } from '@daywatch/cal-ical';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import {
   CallToolRequestSchema,
@@ -21,14 +21,14 @@ import { msftEventsToDateRanges } from './adapters/msft.js';
 import type { GCalEvent, MsftGraphEvent } from './adapters/types.js';
 import { CalendarSession } from './state.js';
 
-const SERVER_INSTRUCTIONS = `Calendar computation engine powered by neo-reckoning. Handles RRULE expansion, timezone math, conflict detection, schedule scoring, and cross-calendar analysis.
+const SERVER_INSTRUCTIONS = `Calendar computation engine powered by daywatch-cal. Handles RRULE expansion, timezone math, conflict detection, schedule scoring, and cross-calendar analysis.
 
 WHEN TO USE NEO-RECKONING vs. A CALENDAR MCP (Google Calendar, Outlook, etc.):
 
 If another calendar MCP is available (e.g., Google Calendar, Microsoft Graph), use it directly for simple queries and writes — listing events, creating/updating/deleting events, RSVPing, or finding free time within a single provider. Those MCPs have live API access and handle the basics well.
 
-Use neo-reckoning when the task goes beyond what a single calendar MCP can do:
-- CROSS-PROVIDER: Finding availability across people on different calendar systems (Alice on Google + Bob on Outlook + Chris from an .ics export). Load each into neo-reckoning with a distinct ID, then use find_common_availability.
+Use daywatch-cal when the task goes beyond what a single calendar MCP can do:
+- CROSS-PROVIDER: Finding availability across people on different calendar systems (Alice on Google + Bob on Outlook + Chris from an .ics export). Load each into daywatch-cal with a distinct ID, then use find_common_availability.
 - SCHEDULE QUALITY: score_schedule gives quantified metrics — conflict count, total free time, focus blocks (consecutive free hours), context switches. No calendar MCP offers this.
 - WHAT-IF ANALYSIS: "What happens if I move standup to 2pm?" Load the calendar, use suggest_changes to preview the move with before/after scores — without touching the real calendar. Then use the source MCP to apply the winning option.
 - CONFLICT DETAIL: find_conflicts returns the specific overlapping events with overlap duration. Calendar FreeBusy APIs only return opaque busy/free blocks.
@@ -36,10 +36,10 @@ Use neo-reckoning when the task goes beyond what a single calendar MCP can do:
 - RECURRENCE REASONING: Understanding recurrence patterns themselves (not just expanded instances). expand_range shows concrete occurrences; the pattern metadata is preserved for reasoning about schedule structure.
 - OFFLINE / NO-AUTH: The user shares calendar data without granting API access. Neo-reckoning works on snapshots — no authentication needed.
 
-TYPICAL AGENT WORKFLOW (when both neo-reckoning and a calendar MCP are available):
+TYPICAL AGENT WORKFLOW (when both daywatch-cal and a calendar MCP are available):
 1. Fetch data from the source MCP (gcal_list_events, Microsoft Graph, etc.)
-2. Load into neo-reckoning: load_calendar(source="gcal", data=<raw JSON>) or source="msft"
-3. Analyze with neo-reckoning: find_conflicts, find_common_availability, score_schedule, suggest_changes
+2. Load into daywatch-cal: load_calendar(source="gcal", data=<raw JSON>) or source="msft"
+3. Analyze with daywatch-cal: find_conflicts, find_common_availability, score_schedule, suggest_changes
 4. Act via the source MCP: gcal_create_event, gcal_update_event, etc.
 
 Neo-reckoning is the thinking step between reading and writing. The source MCP is the hands.
@@ -74,9 +74,9 @@ CROSS-CALENDAR ANALYSIS:
 
 OPTIMIZING:
 - suggest_changes — preview moves/adds/removes with before/after scoring (read-only, does not affect real calendars)
-- apply_changes — commit changes to neo-reckoning's session state after user approval
+- apply_changes — commit changes to daywatch-cal's session state after user approval
 - generate_ics — export current state as .ics for reimport into any calendar app
-- After optimizing in neo-reckoning, use the source calendar MCP (gcal_update_event, etc.) to apply changes to the real calendar
+- After optimizing in daywatch-cal, use the source calendar MCP (gcal_update_event, etc.) to apply changes to the real calendar
 
 FORMATTING:
 Dates: YYYY-MM-DD. Times: HH:mm (24-hour).
@@ -1562,7 +1562,7 @@ export async function handleToolCall(
 
 export function createServer(session = new CalendarSession()): Server {
   const server = new Server(
-    { name: 'neo-reckoning-mcp', version: '0.1.0' },
+    { name: 'daywatch-cal-mcp', version: '0.1.0' },
     {
       capabilities: {
         tools: {},

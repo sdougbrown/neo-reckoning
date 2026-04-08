@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 
-import type { DateRange } from '@neo-reckoning/core';
+import type { DateRange } from '@daywatch/cal';
 
 import { generateICS } from '../src/generate.js';
 import { parseICS } from '../src/parse.js';

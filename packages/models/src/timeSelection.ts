@@ -3,7 +3,7 @@ import {
   minutesToTime,
   parseTime,
   timeToMinutes,
-} from '@neo-reckoning/core';
+} from '@daywatch/cal';
 
 export interface TimeSelection {
   /** YYYY-MM-DD */

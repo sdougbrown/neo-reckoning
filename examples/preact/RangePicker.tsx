@@ -1,7 +1,7 @@
 // Example - copy and adapt. Unstyled by default. Target data-* attributes and class names with your own CSS.
 import { useEffect, useMemo, useState } from 'preact/hooks';
-import { selectionToDateRange } from '@neo-reckoning/models';
-import { useCalendarEvents } from '@neo-reckoning/preact';
+import { selectionToDateRange } from '@daywatch/cal-models';
+import { useCalendarEvents } from '@daywatch/cal-preact';
 import { DatePicker } from './DatePicker.js';
 import { TimePicker } from './TimePicker.js';
 import type {

@@ -1,18 +1,18 @@
-# @neo-reckoning/react
+# @daywatch/cal-react
 
-Headless React hooks for calendar state management. Built on [@neo-reckoning/core](https://www.npmjs.com/package/@neo-reckoning/core) and [@neo-reckoning/models](https://www.npmjs.com/package/@neo-reckoning/models).
+Headless React hooks for calendar state management. Built on [@daywatch/cal](https://www.npmjs.com/package/@daywatch/cal) and [@daywatch/cal-models](https://www.npmjs.com/package/@daywatch/cal-models).
 
 All hooks return data structures — no DOM, no components, no CSS. You bring the rendering.
 
 ## Install
 
 ```
-npm install @neo-reckoning/react @neo-reckoning/core
+npm install @daywatch/cal-react @daywatch/cal
 ```
 
 React 18+ is a peer dependency.
 
-If you want framework-neutral derived helpers without React hooks, use `@neo-reckoning/models` directly.
+If you want framework-neutral derived helpers without React hooks, use `@daywatch/cal-models` directly.
 
 ## Hooks
 
@@ -22,7 +22,7 @@ Calendar grid with navigation. The primary hook for month/week views.
 
 ```typescript
 import { useState } from 'react';
-import { useCalendar } from '@neo-reckoning/react';
+import { useCalendar } from '@daywatch/cal-react';
 
 const [focusDate, setFocusDate] = useState('2026-03-15');
 
@@ -46,11 +46,11 @@ const { months, next, prev, goTo, focusDate } = useCalendar({
 Merges native DateRanges and imported calendar events into a single sorted `CalendarEvent[]`.
 
 ```typescript
-import { useCalendarEvents } from '@neo-reckoning/react';
+import { useCalendarEvents } from '@daywatch/cal-react';
 
 const events = useCalendarEvents({
   ranges: myRanges,
-  importedEvents: icsEvents,  // from @neo-reckoning/ical
+  importedEvents: icsEvents,  // from @daywatch/cal-ical
   from: windowStart,
   to: windowEnd,
   userTimezone: 'America/New_York',
@@ -62,7 +62,7 @@ const events = useCalendarEvents({
 Timeline data for day views with positioned events and overlap detection.
 
 ```typescript
-import { useTimeline } from '@neo-reckoning/react';
+import { useTimeline } from '@daywatch/cal-react';
 
 const { slots } = useTimeline({
   date: '2026-03-23',
@@ -81,8 +81,8 @@ Controlled date-range selection hook for click + hover interactions.
 
 ```typescript
 import { useState } from 'react';
-import { useDateSelection } from '@neo-reckoning/react';
-import type { DateSelection } from '@neo-reckoning/models';
+import { useDateSelection } from '@daywatch/cal-react';
+import type { DateSelection } from '@daywatch/cal-models';
 
 const [selection, setSelection] = useState<DateSelection>({
   start: null,
@@ -105,8 +105,8 @@ Controlled time-block selection hook for timeline or slot-list UIs.
 
 ```typescript
 import { useState } from 'react';
-import { useTimeSelection } from '@neo-reckoning/react';
-import type { TimeSelection } from '@neo-reckoning/models';
+import { useTimeSelection } from '@daywatch/cal-react';
+import type { TimeSelection } from '@daywatch/cal-models';
 
 const [selection, setSelection] = useState<TimeSelection>({
   date: '2026-03-23',
@@ -126,14 +126,14 @@ const { selection: currentSelection, onTimeClick, onTimeHover, clear } = useTime
 });
 ```
 
-Like `useDateSelection`, this hook is controlled and keeps the reducer logic in `@neo-reckoning/models`. See [examples/react/](../../examples/react/) for complete, copy-paste-ready component implementations.
+Like `useDateSelection`, this hook is controlled and keeps the reducer logic in `@daywatch/cal-models`. See [examples/react/](../../examples/react/) for complete, copy-paste-ready component implementations.
 
 ### `useSpans`
 
 Span-level overlap detection with lane assignment for consistent multi-day bar rendering.
 
 ```typescript
-import { useSpans } from '@neo-reckoning/react';
+import { useSpans } from '@daywatch/cal-react';
 
 const spans = useSpans({
   ranges: myRanges,
@@ -149,7 +149,7 @@ const spans = useSpans({
 Time slots and all-day range info for a specific day.
 
 ```typescript
-import { useDayDetail } from '@neo-reckoning/react';
+import { useDayDetail } from '@daywatch/cal-react';
 
 const { timeSlots, allDayRanges } = useDayDetail(
   '2026-03-23',
@@ -163,7 +163,7 @@ const { timeSlots, allDayRanges } = useDayDetail(
 Range evaluation — check which ranges a datetime falls within.
 
 ```typescript
-import { useRangeCheck } from '@neo-reckoning/react';
+import { useRangeCheck } from '@daywatch/cal-react';
 
 const { isInRange, getOccurrences } = useRangeCheck(myRanges, 'America/New_York');
 
@@ -176,7 +176,7 @@ const occurrences = getOccurrences(from, to);
 Find scheduling conflicts across a date window.
 
 ```typescript
-import { useConflicts } from '@neo-reckoning/react';
+import { useConflicts } from '@daywatch/cal-react';
 
 const conflicts = useConflicts({
   ranges: myRanges,
@@ -192,7 +192,7 @@ const conflicts = useConflicts({
 Find available time on a given day.
 
 ```typescript
-import { useFreeSlots } from '@neo-reckoning/react';
+import { useFreeSlots } from '@daywatch/cal-react';
 
 const freeSlots = useFreeSlots({
   ranges: myRanges,
@@ -210,7 +210,7 @@ const freeSlots = useFreeSlots({
 Schedule quality metrics for evaluating arrangements.
 
 ```typescript
-import { useScheduleScore } from '@neo-reckoning/react';
+import { useScheduleScore } from '@daywatch/cal-react';
 
 const score = useScheduleScore({
   ranges: myRanges,
@@ -229,7 +229,7 @@ const score = useScheduleScore({
 - **Headless** — returns data, not DOM. Works with any component library or React Native.
 - **No styling** — range IDs, not colors. Your app maps IDs to palettes.
 - **Memoized** — all hooks use `useMemo` for efficient re-renders.
-- **Layered internals** — low-level computation lives in `@neo-reckoning/core`, while all derived helper logic now lives in `@neo-reckoning/models`. These hooks stay thin.
+- **Layered internals** — low-level computation lives in `@daywatch/cal`, while all derived helper logic now lives in `@daywatch/cal-models`. These hooks stay thin.
 
 ## License
 

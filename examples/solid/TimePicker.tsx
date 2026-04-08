@@ -4,7 +4,7 @@ import {
   createFreeSlots,
   createTimeline,
   createTimeSelection,
-} from '@neo-reckoning/solid';
+} from '@daywatch/cal-solid';
 import type { CalendarEvent, DateRange, TimeSelection } from './shared/types.js';
 
 export interface TimePickerProps {

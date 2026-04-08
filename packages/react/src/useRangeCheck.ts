@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { createRangeCheck } from '@neo-reckoning/models';
-import type { RangeCheck } from '@neo-reckoning/models';
-import type { DateRange } from '@neo-reckoning/core';
+import { createRangeCheck } from '@daywatch/cal-models';
+import type { RangeCheck } from '@daywatch/cal-models';
+import type { DateRange } from '@daywatch/cal';
 
 /**
  * Range evaluation hook — provides isInRange checks and occurrence expansion.
