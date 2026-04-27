@@ -12,11 +12,14 @@
   ],
   "scripts": {
     "build": "turbo run build",
+    "changeset": "changeset",
+    "changeset:version": "changeset version && yarn install",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.30.0",
     "@types/node": "^24.9.1",
     "jsdom": "^29.1.0",
     "turbo": "^2.5.0",
