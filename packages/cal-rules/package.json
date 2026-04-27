@@ -12,12 +12,15 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "NODE_OPTIONS='--experimental-vm-modules' node ../../node_modules/jest/bin/jest.js --config jest.config.js --passWithNoTests",
+    "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@daywatch/cal": "workspace:^",
     "@umpire/core": "^1.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.5"
   },
   "files": [
     "dist"

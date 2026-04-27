@@ -367,6 +367,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@daywatch/cal-rules@workspace:packages/cal-rules":
+  version: 0.0.0-use.local
+  resolution: "@daywatch/cal-rules@workspace:packages/cal-rules"
+  dependencies:
+    "@daywatch/cal": "workspace:^"
+    "@umpire/core": "npm:^1.0.0"
+    vitest: "npm:^4.1.5"
+  languageName: unknown
+  linkType: soft
+
 "@daywatch/cal-solid@workspace:packages/solid":
   version: 0.0.0-use.local
   resolution: "@daywatch/cal-solid@workspace:packages/solid"
@@ -1273,6 +1283,13 @@ __metadata:
   dependencies:
     csstype: "npm:^3.2.2"
   checksum: 10c0/7d25bf41b57719452d86d2ac0570b659210402707313a36ee612666bf11275a1c69824f8c3ee1fdca077ccfe15452f6da8f1224529b917050eb2d861e52b59b7
+  languageName: node
+  linkType: hard
+
+"@umpire/core@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@umpire/core@npm:1.0.0"
+  checksum: 10c0/26ab7cbd0d18eaddd6f21cf9933380a40cc0cf6be49225a1a4dec08f72bc15d60283b87ec79c9f9dc128923bb899abdab833293eb58ace2b79eca7635280b987
   languageName: node
   linkType: hard
 
