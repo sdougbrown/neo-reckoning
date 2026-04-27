@@ -56,3 +56,14 @@ Common prefixes:
 - 📝 docs
 - ✅ tests
 - 🔧 config/tooling
+
+## Changesets
+
+Add a changeset for user-facing package changes:
+
+- `yarn changeset` — create a new changeset
+- `yarn changeset:version` — apply version bumps and changelog updates
+
+PRs that change package/runtime code are expected to include a changeset unless
+they are explicitly labeled as a version bump PR (`🐪 bump`) or are docs/tests/
+workflow-only changes.
