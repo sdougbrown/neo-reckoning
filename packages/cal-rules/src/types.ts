@@ -19,11 +19,23 @@ export interface RangeValidationOptions {
   mode?: RangeValidationMode;
 }
 
-export interface RangeValidationResult {
-  ok: boolean;
-  candidate: DateRangeInput;
-  issues: RangeValidationIssue[];
-}
+export type SanitizedRangeCandidate = Partial<DateRange>;
+
+export type RangeValidationSuccess = {
+  ok: true;
+  candidate: SanitizedRangeCandidate;
+  issues: [];
+};
+
+export type RangeValidationFailure = {
+  ok: false;
+  candidate: SanitizedRangeCandidate;
+  issues: [RangeValidationIssue, ...RangeValidationIssue[]];
+};
+
+export type RangeValidationResult =
+  | RangeValidationSuccess
+  | RangeValidationFailure;
 
 export type DateRangeInput = Partial<DateRange> & Record<string, unknown>;
 

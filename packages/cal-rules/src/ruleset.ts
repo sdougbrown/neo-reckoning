@@ -1,5 +1,5 @@
 import type { DateRange } from '@daywatch/cal';
-import { enabledWhen, fairWhen, requires, umpire } from '@umpire/core';
+import { anyOf, enabledWhen, fairWhen, requires, umpire } from '@umpire/core';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
@@ -107,6 +107,14 @@ export const rangeInputUmp = umpire({
     requires('repeatEvery', 'startTime', {
       reason: 'repeatEvery requires startTime',
     }),
+    anyOf(
+      requires('duration', 'everyHour', {
+        reason: 'duration requires everyHour or startTime',
+      }),
+      requires('duration', 'startTime', {
+        reason: 'duration requires everyHour or startTime',
+      }),
+    ),
     enabledWhen(
       'everyHour',
       (values) =>
@@ -186,7 +194,8 @@ export const rangeInputUmp = umpire({
                 Array.isArray(item) &&
                 item.length === 2 &&
                 isValidDateString(item[0]) &&
-                isValidDateString(item[1]),
+                isValidDateString(item[1]) &&
+                item[0] <= item[1],
             ),
       error:
         'exceptBetween must be [fromDate, toDate] tuples of valid YYYY-MM-DD strings',

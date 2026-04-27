@@ -5,10 +5,10 @@ import type {
   DateRangeInput,
   IndexedRangeValidationResult,
   RangeValidationIssue,
-  RangeValidationIssueCode,
   RangeValidationMode,
   RangeValidationOptions,
   RangeValidationResult,
+  SanitizedRangeCandidate,
 } from './types.js';
 
 const RANGE_KEYS_SET = new Set<string>(RANGE_KEYS);
@@ -17,12 +17,20 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function sanitizeCandidate(record: Record<string, unknown>): DateRangeInput {
-  const sanitized: DateRangeInput = {};
+function assignCandidateValue<K extends keyof DateRange>(
+  candidate: SanitizedRangeCandidate,
+  key: K,
+  value: unknown,
+): void {
+  candidate[key] = value as DateRange[K];
+}
+
+function sanitizeCandidate(record: Record<string, unknown>): SanitizedRangeCandidate {
+  const sanitized: SanitizedRangeCandidate = {};
 
   for (const key of RANGE_KEYS) {
     if (Object.prototype.hasOwnProperty.call(record, key)) {
-      sanitized[key] = record[key] as never;
+      assignCandidateValue(sanitized, key, record[key]);
     }
   }
 
@@ -38,14 +46,12 @@ function invalidInputIssue(label: string): RangeValidationIssue {
 }
 
 function toRequiredDisabledFoulInvalidIssues(
-  candidate: DateRangeInput,
+  candidate: SanitizedRangeCandidate,
 ): RangeValidationIssue[] {
   const availability = rangeInputUmp.check(candidate);
   const issues: RangeValidationIssue[] = [];
 
-  for (const field of Object.keys(availability) as Array<
-    Extract<keyof DateRange, string>
-  >) {
+  for (const field of RANGE_KEYS) {
     const status = availability[field];
 
     if (status.enabled && status.required && !status.satisfied) {
@@ -99,7 +105,7 @@ function toUnknownKeyIssues(
     .filter((key) => !RANGE_KEYS_SET.has(key))
     .map((key) => ({
       field: '$' as const,
-      code: 'unknown_key' as RangeValidationIssueCode,
+      code: 'unknown_key',
       message: `Unknown key "${key}"`,
     }));
 }
@@ -109,13 +115,21 @@ function optionsToMode(options: RangeValidationOptions): RangeValidationMode {
 }
 
 function toResult(
-  candidate: DateRangeInput,
+  candidate: SanitizedRangeCandidate,
   issues: RangeValidationIssue[],
 ): RangeValidationResult {
+  if (issues.length === 0) {
+    return {
+      ok: true,
+      candidate,
+      issues: [],
+    };
+  }
+
   return {
-    ok: issues.length === 0,
+    ok: false,
     candidate,
-    issues,
+    issues: [issues[0], ...issues.slice(1)],
   };
 }
 
@@ -153,8 +167,12 @@ export function validateRangePatch(
     issues.push(invalidInputIssue('patch'));
   }
 
-  const safeExisting = isPlainObject(existing) ? existing : {};
-  const safePatch = isPlainObject(patch) ? patch : {};
+  if (issues.length > 0) {
+    return toResult({}, issues);
+  }
+
+  const safeExisting = existing as Record<string, unknown>;
+  const safePatch = patch as Record<string, unknown>;
   const rawMerged = { ...safeExisting, ...safePatch };
   const candidate = sanitizeCandidate(rawMerged);
 
@@ -173,7 +191,7 @@ export function validateRanges(
   if (!Array.isArray(ranges)) {
     return [
       {
-        index: 0,
+        index: -1,
         ...toResult({}, [
           {
             field: '$',
