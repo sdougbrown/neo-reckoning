@@ -1,0 +1,33 @@
+{
+  "name": "@daywatch/cal-rules",
+  "version": "0.1.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' node ../../node_modules/jest/bin/jest.js --config jest.config.js --passWithNoTests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@daywatch/cal": "workspace:^",
+    "@umpire/core": "^1.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sdougbrown/daywatch-cal.git",
+    "directory": "packages/cal-rules"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
