@@ -18,7 +18,9 @@
     "format:check": "oxfmt --check \"packages/**/*.{ts,tsx,js,mjs,cjs,json}\" \"examples/**/*.{ts,tsx,js,mjs,cjs,json}\" \"scripts/**/*.{ts,js,mjs,cjs}\" \"*.{js,json,ts}\"",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-    "lint": "oxlint packages"
+    "lint": "yarn lint:oxlint && yarn lint:eslint",
+    "lint:oxlint": "oxlint packages",
+    "lint:eslint": "yarn workspace @daywatch/cal-rules lint:eslint"
   },
   "devDependencies": {
     "@changesets/cli": "^2.30.0",
