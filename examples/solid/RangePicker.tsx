@@ -119,14 +119,14 @@ export function RangePicker(props: RangePickerProps) {
 
   return (
     <div
-      class='neo-range-picker'
+      class="neo-range-picker"
       style={{
         display: 'grid',
         gap: '1rem',
         'grid-template-columns': 'repeat(auto-fit, minmax(280px, 1fr))',
       }}
     >
-      <div class='neo-range-picker__column'>
+      <div class="neo-range-picker__column">
         <h3>Date range</h3>
         <DatePicker
           blockedRanges={props.ranges}
@@ -137,7 +137,7 @@ export function RangePicker(props: RangePickerProps) {
         />
       </div>
 
-      <div class='neo-range-picker__column'>
+      <div class="neo-range-picker__column">
         <h3>Time block</h3>
         <p>{helperText()}</p>
 

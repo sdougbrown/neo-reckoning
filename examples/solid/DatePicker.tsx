@@ -85,28 +85,28 @@ export function DatePicker(props: DatePickerProps) {
   const rangeEnd = createMemo(() => props.selection.end ?? props.selection.preview);
 
   return (
-    <div class='neo-datepicker'>
-      <div class='neo-datepicker__nav'>
-        <button type='button' onClick={calendar.prev}>
+    <div class="neo-datepicker">
+      <div class="neo-datepicker__nav">
+        <button type="button" onClick={calendar.prev}>
           Previous
         </button>
         <strong>{calendar.months()[0]?.label}</strong>
-        <button type='button' onClick={calendar.next}>
+        <button type="button" onClick={calendar.next}>
           Next
         </button>
       </div>
 
       <For each={calendar.months()}>
         {(month) => (
-          <div class='neo-datepicker__month'>
+          <div class="neo-datepicker__month">
             {(props.numberOfMonths ?? 1) > 1 ? <h3>{month.label}</h3> : null}
 
-            <table class='neo-datepicker__grid'>
+            <table class="neo-datepicker__grid">
               <thead>
                 <tr>
                   <For each={weekdayLabels()}>
                     {(label) => (
-                      <th class='neo-datepicker__weekday' scope='col'>
+                      <th class="neo-datepicker__weekday" scope="col">
                         {label}
                       </th>
                     )}
@@ -122,8 +122,8 @@ export function DatePicker(props: DatePickerProps) {
                         {(day) => (
                           <td>
                             <button
-                              type='button'
-                              class='neo-datepicker__day'
+                              type="button"
+                              class="neo-datepicker__day"
                               data-blocked={isDateBlocked()(day.date) ? '' : undefined}
                               data-in-range={
                                 props.selection.start &&

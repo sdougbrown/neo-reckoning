@@ -93,20 +93,20 @@ export function App() {
   const rangeDemoRanges = useMemo(() => [...sampleRanges, ...createdRanges], [createdRanges]);
 
   return (
-    <main className='sandbox'>
-      <header className='sandbox__header'>
+    <main className="sandbox">
+      <header className="sandbox__header">
         <h1>daywatch-cal sandbox</h1>
         <p>
           Reference implementations for date selection, time selection, and full range composition.
         </p>
       </header>
 
-      <nav className='sandbox__tabs' aria-label='Examples'>
+      <nav className="sandbox__tabs" aria-label="Examples">
         {(['date', 'time', 'range'] as DemoTab[]).map((tab) => (
           <button
             key={tab}
-            type='button'
-            className='sandbox__tab'
+            type="button"
+            className="sandbox__tab"
             data-active={activeTab === tab ? '' : undefined}
             onClick={() => setActiveTab(tab)}
           >
@@ -118,7 +118,7 @@ export function App() {
       </nav>
 
       {activeTab === 'date' ? (
-        <section className='sandbox__panel'>
+        <section className="sandbox__panel">
           <h2>Date Picker</h2>
           <DatePicker
             blockedRanges={sampleRanges}
@@ -126,17 +126,17 @@ export function App() {
             ranges={sampleRanges}
             selection={dateSelection}
           />
-          <pre className='sandbox__debug'>{JSON.stringify(dateSelection, null, 2)}</pre>
+          <pre className="sandbox__debug">{JSON.stringify(dateSelection, null, 2)}</pre>
         </section>
       ) : null}
 
       {activeTab === 'time' ? (
-        <section className='sandbox__panel'>
-          <div className='sandbox__controls'>
+        <section className="sandbox__panel">
+          <div className="sandbox__controls">
             <label>
               Date
               <input
-                type='date'
+                type="date"
                 value={timeDemoDate}
                 onChange={(event) => setTimeDemoDate(event.currentTarget.value)}
               />
@@ -154,12 +154,12 @@ export function App() {
             startHour={8}
             endHour={18}
           />
-          <pre className='sandbox__debug'>{JSON.stringify(timeSelection, null, 2)}</pre>
+          <pre className="sandbox__debug">{JSON.stringify(timeSelection, null, 2)}</pre>
         </section>
       ) : null}
 
       {activeTab === 'range' ? (
-        <section className='sandbox__panel'>
+        <section className="sandbox__panel">
           <RangePicker
             onRangeCreated={(range) => {
               setCreatedRanges((current) => [...current, range]);
@@ -167,9 +167,9 @@ export function App() {
             ranges={rangeDemoRanges}
           />
 
-          <div className='sandbox__stack'>
+          <div className="sandbox__stack">
             <h2>Created ranges</h2>
-            <ul className='sandbox__list'>
+            <ul className="sandbox__list">
               {createdRanges.length === 0 ? (
                 <li>No ranges created yet.</li>
               ) : (

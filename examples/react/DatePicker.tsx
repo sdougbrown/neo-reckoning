@@ -95,26 +95,26 @@ export function DatePicker({
   const rangeEnd = selection.end ?? selection.preview;
 
   return (
-    <div className='neo-datepicker'>
-      <div className='neo-datepicker__nav'>
-        <button type='button' onClick={prev}>
+    <div className="neo-datepicker">
+      <div className="neo-datepicker__nav">
+        <button type="button" onClick={prev}>
           Previous
         </button>
         <strong>{months[0]?.label}</strong>
-        <button type='button' onClick={next}>
+        <button type="button" onClick={next}>
           Next
         </button>
       </div>
 
       {months.map((month) => (
-        <div key={`${month.year}-${month.month}`} className='neo-datepicker__month'>
+        <div key={`${month.year}-${month.month}`} className="neo-datepicker__month">
           {numberOfMonths > 1 ? <h3>{month.label}</h3> : null}
 
-          <table className='neo-datepicker__grid'>
+          <table className="neo-datepicker__grid">
             <thead>
               <tr>
                 {weekdayLabels.map((label) => (
-                  <th key={label} className='neo-datepicker__weekday' scope='col'>
+                  <th key={label} className="neo-datepicker__weekday" scope="col">
                     {label}
                   </th>
                 ))}
@@ -136,8 +136,8 @@ export function DatePicker({
                     return (
                       <td key={day.date}>
                         <button
-                          type='button'
-                          className='neo-datepicker__day'
+                          type="button"
+                          className="neo-datepicker__day"
                           data-blocked={blocked ? '' : undefined}
                           data-in-range={inRange ? '' : undefined}
                           data-outside-month={!day.isCurrentMonth ? '' : undefined}

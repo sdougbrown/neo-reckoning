@@ -86,7 +86,7 @@ export function TimePicker({
   const fallbackBoundary = useMemo(() => hourToTime(endHour), [endHour]);
 
   return (
-    <div className='neo-timepicker'>
+    <div className="neo-timepicker">
       {slots.map((slot, index) => {
         const nextBoundary = slots[index + 1]?.time ?? fallbackBoundary;
         const selected =
@@ -102,8 +102,8 @@ export function TimePicker({
         return (
           <button
             key={slot.time}
-            type='button'
-            className='neo-timepicker__slot'
+            type="button"
+            className="neo-timepicker__slot"
             data-free={free ? '' : undefined}
             data-in-range={inRange ? '' : undefined}
             data-occupied={occupied ? '' : undefined}
@@ -113,8 +113,8 @@ export function TimePicker({
             onFocus={() => onTimeHover(slot.time)}
             onMouseEnter={() => onTimeHover(slot.time)}
           >
-            <span className='neo-timepicker__label'>{slot.time}</span>
-            <span className='neo-timepicker__events'>
+            <span className="neo-timepicker__label">{slot.time}</span>
+            <span className="neo-timepicker__events">
               {occupied ? slot.events.map(({ event }) => event.title).join(', ') : 'Available'}
             </span>
           </button>
