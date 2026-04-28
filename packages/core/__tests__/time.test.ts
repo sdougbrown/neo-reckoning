@@ -60,7 +60,11 @@ describe('time utilities', () => {
 
   describe('parseDate', () => {
     it('parses YYYY-MM-DD with 0-indexed month', () => {
-      expect(parseDate('2026-03-21')).toEqual({ year: 2026, month: 2, day: 21 });
+      expect(parseDate('2026-03-21')).toEqual({
+        year: 2026,
+        month: 2,
+        day: 21,
+      });
       expect(parseDate('2026-01-01')).toEqual({ year: 2026, month: 0, day: 1 });
     });
   });
@@ -101,13 +105,7 @@ describe('time utilities', () => {
   describe('dateRange', () => {
     it('generates inclusive date range', () => {
       const range = dateRange('2026-03-01', '2026-03-05');
-      expect(range).toEqual([
-        '2026-03-01',
-        '2026-03-02',
-        '2026-03-03',
-        '2026-03-04',
-        '2026-03-05',
-      ]);
+      expect(range).toEqual(['2026-03-01', '2026-03-02', '2026-03-03', '2026-03-04', '2026-03-05']);
     });
 
     it('returns single date when from equals to', () => {
@@ -129,11 +127,15 @@ describe('time utilities', () => {
     });
 
     it('builds UTC dates without shifting the instant', () => {
-      expect(buildDate('2026-03-21', '14:00', 'UTC').toISOString()).toBe('2026-03-21T14:00:00.000Z');
+      expect(buildDate('2026-03-21', '14:00', 'UTC').toISOString()).toBe(
+        '2026-03-21T14:00:00.000Z',
+      );
     });
 
     it('formats dates in a specific timezone', () => {
-      expect(formatDateInTimezone(new Date('2026-03-21T01:30:00.000Z'), 'America/New_York')).toBe('2026-03-20');
+      expect(formatDateInTimezone(new Date('2026-03-21T01:30:00.000Z'), 'America/New_York')).toBe(
+        '2026-03-20',
+      );
     });
 
     it('reads clock time in a specific timezone', () => {

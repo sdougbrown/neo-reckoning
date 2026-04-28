@@ -141,8 +141,16 @@ describe('RangeEvaluator', () => {
       });
       const slots = utcEvaluator.getTimeSlots('2026-03-21', range);
       expect(slots).toHaveLength(2);
-      expect(slots[0]).toMatchObject({ startTime: '09:00', endTime: '09:30', duration: 30 });
-      expect(slots[1]).toMatchObject({ startTime: '17:00', endTime: '17:30', duration: 30 });
+      expect(slots[0]).toMatchObject({
+        startTime: '09:00',
+        endTime: '09:30',
+        duration: 30,
+      });
+      expect(slots[1]).toMatchObject({
+        startTime: '17:00',
+        endTime: '17:30',
+        duration: 30,
+      });
     });
 
     it('generates single time block for startTime + endTime', () => {
@@ -268,8 +276,18 @@ describe('RangeEvaluator', () => {
         metadata,
       });
 
-      expect(utcEvaluator.expand(metadataRange, new Date('2026-03-21T00:00:00Z'), new Date('2026-03-21T00:00:00Z'))).toEqual(
-        utcEvaluator.expand(plainRange, new Date('2026-03-21T00:00:00Z'), new Date('2026-03-21T00:00:00Z')),
+      expect(
+        utcEvaluator.expand(
+          metadataRange,
+          new Date('2026-03-21T00:00:00Z'),
+          new Date('2026-03-21T00:00:00Z'),
+        ),
+      ).toEqual(
+        utcEvaluator.expand(
+          plainRange,
+          new Date('2026-03-21T00:00:00Z'),
+          new Date('2026-03-21T00:00:00Z'),
+        ),
       );
       expect(
         utcEvaluator.findFreeSlots([metadataRange], '2026-03-21', {
@@ -300,8 +318,12 @@ describe('RangeEvaluator', () => {
 
       // Mondays in March 2026: 2, 9, 16, 23, 30
       expect(occurrences).toHaveLength(5);
-      expect(occurrences[0]).toMatchObject({ date: '2026-03-02', allDay: true, startTime: null });
-      expect(occurrences.every(o => o.allDay)).toBe(true);
+      expect(occurrences[0]).toMatchObject({
+        date: '2026-03-02',
+        allDay: true,
+        startTime: null,
+      });
+      expect(occurrences.every((o) => o.allDay)).toBe(true);
     });
 
     it('expands timed range over a window', () => {
@@ -318,7 +340,11 @@ describe('RangeEvaluator', () => {
 
       // Mon 23, Wed 25, Fri 27 × 2 hours each = 6
       expect(occurrences).toHaveLength(6);
-      expect(occurrences[0]).toMatchObject({ date: '2026-03-23', startTime: '09:00', allDay: false });
+      expect(occurrences[0]).toMatchObject({
+        date: '2026-03-23',
+        startTime: '09:00',
+        allDay: false,
+      });
     });
 
     it('clips to query window when range is wider', () => {
@@ -373,7 +399,7 @@ describe('RangeEvaluator', () => {
       expect(occurrences).toHaveLength(28);
       expect(occurrences[0].date).toBe('2026-02-01');
       expect(occurrences.at(-1)?.date).toBe('2026-02-28');
-      expect(occurrences.every(o => o.date.startsWith('2026-02-'))).toBe(true);
+      expect(occurrences.every((o) => o.date.startsWith('2026-02-'))).toBe(true);
     });
 
     it('expands weekday + month recurrence over a broad window', () => {
@@ -386,7 +412,7 @@ describe('RangeEvaluator', () => {
       const to = new Date(2026, 2, 31);
       const occurrences = utcEvaluator.expand(range, from, to);
 
-      expect(occurrences.map(o => o.date)).toEqual([
+      expect(occurrences.map((o) => o.date)).toEqual([
         '2026-02-02',
         '2026-02-09',
         '2026-02-16',
@@ -409,9 +435,7 @@ describe('RangeEvaluator', () => {
       const to = new Date(2024, 2, 31);
       const occurrences = utcEvaluator.expand(range, from, to);
 
-      expect(occurrences.map(o => o.date)).toEqual([
-        '2024-02-29',
-      ]);
+      expect(occurrences.map((o) => o.date)).toEqual(['2024-02-29']);
     });
   });
 

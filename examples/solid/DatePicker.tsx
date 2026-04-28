@@ -51,9 +51,7 @@ export function DatePicker(props: DatePickerProps) {
     }
   });
 
-  const weekdayLabels = createMemo(() =>
-    getWeekdayLabels(props.weekStartsOn ?? 0, props.locale),
-  );
+  const weekdayLabels = createMemo(() => getWeekdayLabels(props.weekStartsOn ?? 0, props.locale));
 
   const isDateBlocked = createMemo(() => {
     if (!props.blockedRanges?.length) {
@@ -81,7 +79,7 @@ export function DatePicker(props: DatePickerProps) {
   const dateSelection = createDateSelection(() => ({
     selection: props.selection,
     onSelectionChange: props.onSelectionChange,
-    isDateSelectable: date => !isDateBlocked()(date),
+    isDateSelectable: (date) => !isDateBlocked()(date),
   }));
 
   const rangeEnd = createMemo(() => props.selection.end ?? props.selection.preview);
@@ -99,7 +97,7 @@ export function DatePicker(props: DatePickerProps) {
       </div>
 
       <For each={calendar.months()}>
-        {month => (
+        {(month) => (
           <div class="neo-datepicker__month">
             {(props.numberOfMonths ?? 1) > 1 ? <h3>{month.label}</h3> : null}
 
@@ -107,7 +105,7 @@ export function DatePicker(props: DatePickerProps) {
               <thead>
                 <tr>
                   <For each={weekdayLabels()}>
-                    {label => (
+                    {(label) => (
                       <th class="neo-datepicker__weekday" scope="col">
                         {label}
                       </th>
@@ -121,16 +119,31 @@ export function DatePicker(props: DatePickerProps) {
                   {(week, weekIndex) => (
                     <tr>
                       <For each={week.days}>
-                        {day => (
+                        {(day) => (
                           <td>
                             <button
                               type="button"
                               class="neo-datepicker__day"
                               data-blocked={isDateBlocked()(day.date) ? '' : undefined}
-                              data-in-range={props.selection.start && rangeEnd() && isDateBetween(day.date, props.selection.start, rangeEnd()) ? '' : undefined}
+                              data-in-range={
+                                props.selection.start &&
+                                rangeEnd() &&
+                                isDateBetween(day.date, props.selection.start, rangeEnd())
+                                  ? ''
+                                  : undefined
+                              }
                               data-outside-month={!day.isCurrentMonth ? '' : undefined}
-                              data-preview={!props.selection.end && day.date === props.selection.preview ? '' : undefined}
-                              data-selected={day.date === props.selection.start || day.date === props.selection.end ? '' : undefined}
+                              data-preview={
+                                !props.selection.end && day.date === props.selection.preview
+                                  ? ''
+                                  : undefined
+                              }
+                              data-selected={
+                                day.date === props.selection.start ||
+                                day.date === props.selection.end
+                                  ? ''
+                                  : undefined
+                              }
                               data-today={day.isToday ? '' : undefined}
                               disabled={isDateBlocked()(day.date)}
                               onClick={() => {

@@ -1,9 +1,5 @@
 import { vi } from 'vitest';
-import {
-  createIsDateBlocked,
-  selectionToDateRange,
-  updateDateSelection,
-} from '../src/index.js';
+import { createIsDateBlocked, selectionToDateRange, updateDateSelection } from '../src/index.js';
 
 describe('date selection helpers', () => {
   it('sets start on the first click', () => {
@@ -131,14 +127,20 @@ describe('date selection helpers', () => {
 
   it('treats hover as a no-op before a start date is selected', () => {
     const selection = { start: null, end: null, preview: null };
-    const next = updateDateSelection(selection, { type: 'hover', date: '2026-03-12' });
+    const next = updateDateSelection(selection, {
+      type: 'hover',
+      date: '2026-03-12',
+    });
 
     expect(next).toBe(selection);
   });
 
   it('treats hover as a no-op after the selection is complete', () => {
     const selection = { start: '2026-03-10', end: '2026-03-12', preview: null };
-    const next = updateDateSelection(selection, { type: 'hover', date: '2026-03-15' });
+    const next = updateDateSelection(selection, {
+      type: 'hover',
+      date: '2026-03-15',
+    });
 
     expect(next).toBe(selection);
   });

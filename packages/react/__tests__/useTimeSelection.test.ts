@@ -12,7 +12,12 @@ describe('useTimeSelection', () => {
     const { result } = renderHook(() =>
       useTimeSelection({
         date: '2026-03-10',
-        selection: { date: '2026-03-10', startTime: null, endTime: null, preview: null },
+        selection: {
+          date: '2026-03-10',
+          startTime: null,
+          endTime: null,
+          preview: null,
+        },
         onSelectionChange,
         intervalMinutes: 15,
       }),
@@ -35,7 +40,12 @@ describe('useTimeSelection', () => {
     const { result } = renderHook(() =>
       useTimeSelection({
         date: '2026-03-10',
-        selection: { date: '2026-03-10', startTime: '14:00', endTime: null, preview: null },
+        selection: {
+          date: '2026-03-10',
+          startTime: '14:00',
+          endTime: null,
+          preview: null,
+        },
         onSelectionChange,
         intervalMinutes: 15,
       }),
@@ -58,7 +68,12 @@ describe('useTimeSelection', () => {
     const { result } = renderHook(() =>
       useTimeSelection({
         date: '2026-03-10',
-        selection: { date: '2026-03-10', startTime: '14:00', endTime: '15:00', preview: '14:30' },
+        selection: {
+          date: '2026-03-10',
+          startTime: '14:00',
+          endTime: '15:00',
+          preview: '14:30',
+        },
         onSelectionChange,
       }),
     );
@@ -80,7 +95,12 @@ describe('useTimeSelection', () => {
     const { result } = renderHook(() =>
       useTimeSelection({
         date: '2026-03-10',
-        selection: { date: '2026-03-10', startTime: null, endTime: null, preview: null },
+        selection: {
+          date: '2026-03-10',
+          startTime: null,
+          endTime: null,
+          preview: null,
+        },
         onSelectionChange,
         intervalMinutes: 30,
       }),

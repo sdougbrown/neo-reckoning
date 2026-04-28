@@ -89,7 +89,7 @@ export function DatePicker({
   const { onDateClick, onDateHover } = useDateSelection({
     selection,
     onSelectionChange,
-    isDateSelectable: date => !isDateBlocked(date),
+    isDateSelectable: (date) => !isDateBlocked(date),
   });
 
   const rangeEnd = selection.end ?? selection.preview;
@@ -106,17 +106,14 @@ export function DatePicker({
         </button>
       </div>
 
-      {months.map(month => (
-        <div
-          key={`${month.year}-${month.month}`}
-          className="neo-datepicker__month"
-        >
+      {months.map((month) => (
+        <div key={`${month.year}-${month.month}`} className="neo-datepicker__month">
           {numberOfMonths > 1 ? <h3>{month.label}</h3> : null}
 
           <table className="neo-datepicker__grid">
             <thead>
               <tr>
-                {weekdayLabels.map(label => (
+                {weekdayLabels.map((label) => (
                   <th key={label} className="neo-datepicker__weekday" scope="col">
                     {label}
                   </th>
@@ -127,13 +124,14 @@ export function DatePicker({
             <tbody>
               {month.weeks.map((week, weekIndex) => (
                 <tr key={`${month.label}-week-${weekIndex}`}>
-                  {week.days.map(day => {
+                  {week.days.map((day) => {
                     const blocked = isDateBlocked(day.date);
                     const selected = day.date === selection.start || day.date === selection.end;
                     const preview = !selection.end && day.date === selection.preview;
-                    const inRange = selection.start && rangeEnd
-                      ? isDateBetween(day.date, selection.start, rangeEnd)
-                      : false;
+                    const inRange =
+                      selection.start && rangeEnd
+                        ? isDateBetween(day.date, selection.start, rangeEnd)
+                        : false;
 
                     return (
                       <td key={day.date}>

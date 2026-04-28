@@ -136,7 +136,7 @@ export class RangeEvaluator {
 
       if (range.repeatEvery) {
         const endBoundary = range.endTime
-          ? this.resolveTime(dateStr, range.endTime, range.timezone) ?? '24:00'
+          ? (this.resolveTime(dateStr, range.endTime, range.timezone) ?? '24:00')
           : '24:00';
         const endMinutes = timeToMinutes(endBoundary);
         let currentMinutes = timeToMinutes(resolvedStart);
@@ -198,7 +198,11 @@ export class RangeEvaluator {
     ranges: DateRange[],
     date: string,
   ): Array<{ slot: TimeSlot; startMinutes: number; endMinutes: number }> {
-    const entries: Array<{ slot: TimeSlot; startMinutes: number; endMinutes: number }> = [];
+    const entries: Array<{
+      slot: TimeSlot;
+      startMinutes: number;
+      endMinutes: number;
+    }> = [];
 
     for (const range of ranges) {
       if (!this.isDateInRange(date, range)) continue;
@@ -406,7 +410,7 @@ export class RangeEvaluator {
         return compareDates(allSpans[a].endDate, allSpans[b].endDate);
       });
 
-    const lanes = new Array<number>(allSpans.length).fill(-1);
+    const lanes = Array.from({ length: allSpans.length }, () => -1);
     const laneEndDates: string[] = [];
 
     for (const idx of sortedIndices) {
@@ -428,7 +432,7 @@ export class RangeEvaluator {
     }
 
     // Step 4: Compute maxOverlap per span and totalLanes for overlap groups
-    const maxOverlaps = new Array<number>(allSpans.length).fill(1);
+    const maxOverlaps = Array.from({ length: allSpans.length }, () => 1);
     for (let i = 0; i < allSpans.length; i++) {
       for (const day of allSpans[i].days) {
         const overlapping = dayToSpans.get(day)!;
@@ -452,7 +456,7 @@ export class RangeEvaluator {
     }
 
     const visited = new Set<number>();
-    const componentOf = new Array<number>(allSpans.length).fill(-1);
+    const componentOf = Array.from({ length: allSpans.length }, () => -1);
     const components: number[][] = [];
 
     for (let i = 0; i < allSpans.length; i++) {
@@ -480,8 +484,8 @@ export class RangeEvaluator {
       }
     }
 
-    const componentTotalLanes = components.map(comp => {
-      const usedLanes = new Set(comp.map(idx => lanes[idx]));
+    const componentTotalLanes = components.map((comp) => {
+      const usedLanes = new Set(comp.map((idx) => lanes[idx]));
       return usedLanes.size;
     });
 
@@ -518,8 +522,8 @@ export class RangeEvaluator {
    */
   findConflicts(ranges: DateRange[], date: string): Conflict[] {
     const slots = this.getTimedEntriesForDay(ranges, date)
-      .filter(entry => entry.slot.endTime !== null && entry.endMinutes > entry.startMinutes)
-      .map(entry => ({
+      .filter((entry) => entry.slot.endTime !== null && entry.endMinutes > entry.startMinutes)
+      .map((entry) => ({
         rangeId: entry.slot.rangeId,
         label: entry.slot.label,
         startMinutes: entry.startMinutes,
@@ -539,9 +543,10 @@ export class RangeEvaluator {
         if (slots[i].rangeId === slots[j].rangeId) continue;
 
         // Deduplicate: use sorted pair key
-        const pairKey = slots[i].rangeId < slots[j].rangeId
-          ? `${slots[i].rangeId}|${slots[j].rangeId}`
-          : `${slots[j].rangeId}|${slots[i].rangeId}`;
+        const pairKey =
+          slots[i].rangeId < slots[j].rangeId
+            ? `${slots[i].rangeId}|${slots[j].rangeId}`
+            : `${slots[j].rangeId}|${slots[i].rangeId}`;
         if (seen.has(pairKey)) continue;
         seen.add(pairKey);
 
@@ -755,7 +760,7 @@ export class RangeEvaluator {
     // Explicit dates — just filter to the window
     if (compiled.dates) {
       return compiled.dates.filter(
-        d => compareDates(d, effectiveFrom) >= 0 && compareDates(d, effectiveTo) <= 0,
+        (d) => compareDates(d, effectiveFrom) >= 0 && compareDates(d, effectiveTo) <= 0,
       );
     }
 
@@ -764,7 +769,7 @@ export class RangeEvaluator {
       if (!compiled.exceptDatesSet && !compiled.exceptBetween) {
         return allDays;
       }
-      return allDays.filter(day => !this.isDateExcluded(day, compiled));
+      return allDays.filter((day) => !this.isDateExcluded(day, compiled));
     }
 
     if (compiled.dateLookup) {
@@ -781,7 +786,7 @@ export class RangeEvaluator {
 
     // Fallback for any recurrence shape not handled above
     const allDays = dateRange(effectiveFrom, effectiveTo);
-    return allDays.filter(day => this.isDateInRange(day, range));
+    return allDays.filter((day) => this.isDateInRange(day, range));
   }
 
   private hasTimeFields(range: DateRange): boolean {
@@ -807,7 +812,10 @@ export class RangeEvaluator {
           continue;
         }
 
-        if (compiled.weekdayLookup && !compiled.weekdayLookup[new Date(year, month, day).getDay()]) {
+        if (
+          compiled.weekdayLookup &&
+          !compiled.weekdayLookup[new Date(year, month, day).getDay()]
+        ) {
           continue;
         }
 
@@ -922,8 +930,7 @@ export class RangeEvaluator {
       ...(range.dates && range.dates.length > 0
         ? {
             dates: range.dates,
-            datesSet: new Set(range.dates,
-            ),
+            datesSet: new Set(range.dates),
           }
         : {}),
       ...(range.exceptDates && range.exceptDates.length > 0
@@ -932,15 +939,9 @@ export class RangeEvaluator {
       ...(range.exceptBetween && range.exceptBetween.length > 0
         ? { exceptBetween: range.exceptBetween }
         : {}),
-      ...(range.everyWeekday
-        ? { weekdayLookup: buildLookup(7, range.everyWeekday) }
-        : {}),
-      ...(range.everyDate
-        ? { dateLookup: buildLookup(32, range.everyDate) }
-        : {}),
-      ...(range.everyMonth
-        ? { monthLookup: buildLookup(13, range.everyMonth) }
-        : {}),
+      ...(range.everyWeekday ? { weekdayLookup: buildLookup(7, range.everyWeekday) } : {}),
+      ...(range.everyDate ? { dateLookup: buildLookup(32, range.everyDate) } : {}),
+      ...(range.everyMonth ? { monthLookup: buildLookup(13, range.everyMonth) } : {}),
       hasRecurrence: !!(range.everyWeekday || range.everyDate || range.everyMonth),
       hasTimeFields: !!(range.everyHour || range.startTime),
     };

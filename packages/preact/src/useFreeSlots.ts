@@ -7,7 +7,15 @@ export function useFreeSlots(config: FreeSlotsModelConfig): FreeSlot[] {
   const { ranges, date, minDuration, dayStart, dayEnd, userTimezone } = config;
 
   return useMemo(
-    () => buildFreeSlotsModel({ ranges, date, minDuration, dayStart, dayEnd, userTimezone }),
+    () =>
+      buildFreeSlotsModel({
+        ranges,
+        date,
+        minDuration,
+        dayStart,
+        dayEnd,
+        userTimezone,
+      }),
     [ranges, date, minDuration, dayStart, dayEnd, userTimezone],
   );
 }

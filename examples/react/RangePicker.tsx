@@ -65,7 +65,9 @@ export function RangePicker({
 }: RangePickerProps) {
   const today = getTodayDateString();
   const [dateSelection, setDateSelection] = useState<DateSelection>(emptyDateSelection);
-  const [timeSelection, setTimeSelection] = useState<TimeSelection>(() => emptyTimeSelection(today));
+  const [timeSelection, setTimeSelection] = useState<TimeSelection>(() =>
+    emptyTimeSelection(today),
+  );
   const activeDate = dateSelection.start ?? today;
   const dateSelectionComplete = Boolean(dateSelection.start && dateSelection.end);
 

@@ -74,7 +74,9 @@ export function App() {
   const [activeTab, setActiveTab] = useState<DemoTab>('date');
   const [dateSelection, setDateSelection] = useState<DateSelection>(emptyDateSelection);
   const [timeDemoDate, setTimeDemoDate] = useState('2026-04-07');
-  const [timeSelection, setTimeSelection] = useState<TimeSelection>(() => emptyTimeSelection('2026-04-07'));
+  const [timeSelection, setTimeSelection] = useState<TimeSelection>(() =>
+    emptyTimeSelection('2026-04-07'),
+  );
   const [createdRanges, setCreatedRanges] = useState<DateRange[]>([]);
 
   useEffect(() => {
@@ -88,20 +90,19 @@ export function App() {
     to: endOfDay(timeDemoDate),
   });
 
-  const rangeDemoRanges = useMemo(
-    () => [...sampleRanges, ...createdRanges],
-    [createdRanges],
-  );
+  const rangeDemoRanges = useMemo(() => [...sampleRanges, ...createdRanges], [createdRanges]);
 
   return (
     <main className="sandbox">
       <header className="sandbox__header">
         <h1>daywatch-cal sandbox</h1>
-        <p>Reference implementations for date selection, time selection, and full range composition.</p>
+        <p>
+          Reference implementations for date selection, time selection, and full range composition.
+        </p>
       </header>
 
       <nav className="sandbox__tabs" aria-label="Examples">
-        {(['date', 'time', 'range'] as DemoTab[]).map(tab => (
+        {(['date', 'time', 'range'] as DemoTab[]).map((tab) => (
           <button
             key={tab}
             type="button"
@@ -137,7 +138,7 @@ export function App() {
               <input
                 type="date"
                 value={timeDemoDate}
-                onChange={event => setTimeDemoDate(event.currentTarget.value)}
+                onChange={(event) => setTimeDemoDate(event.currentTarget.value)}
               />
             </label>
           </div>
@@ -160,8 +161,8 @@ export function App() {
       {activeTab === 'range' ? (
         <section className="sandbox__panel">
           <RangePicker
-            onRangeCreated={range => {
-              setCreatedRanges(current => [...current, range]);
+            onRangeCreated={(range) => {
+              setCreatedRanges((current) => [...current, range]);
             }}
             ranges={rangeDemoRanges}
           />
@@ -172,7 +173,7 @@ export function App() {
               {createdRanges.length === 0 ? (
                 <li>No ranges created yet.</li>
               ) : (
-                createdRanges.map(range => (
+                createdRanges.map((range) => (
                   <li key={range.id}>
                     <strong>{range.label || range.id}</strong>
                     <span>{formatRange(range)}</span>

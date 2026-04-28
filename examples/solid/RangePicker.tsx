@@ -61,7 +61,9 @@ export function RangePicker(props: RangePickerProps) {
   const [timeSelection, setTimeSelection] = createSignal<TimeSelection>(
     emptyTimeSelection(activeDate()),
   );
-  const dateSelectionComplete = createMemo(() => Boolean(dateSelection().start && dateSelection().end));
+  const dateSelectionComplete = createMemo(() =>
+    Boolean(dateSelection().start && dateSelection().end),
+  );
 
   // Once the date span changes, reset the time step so the two phases stay in sync.
   createEffect(() => {

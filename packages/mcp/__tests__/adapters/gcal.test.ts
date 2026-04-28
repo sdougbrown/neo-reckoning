@@ -1,12 +1,22 @@
 import type { GCalEvent } from '../../src/adapters/types.js';
-import { gcalEventToDateRange, gcalEventsToDateRanges, isBlockingEvent } from '../../src/adapters/gcal.js';
+import {
+  gcalEventToDateRange,
+  gcalEventsToDateRanges,
+  isBlockingEvent,
+} from '../../src/adapters/gcal.js';
 
 const acceptedTimed: GCalEvent = {
   id: 'evt_001_20260330T163000Z',
   summary: 'Team PR Reviews',
   eventType: 'default',
-  start: { dateTime: '2026-03-30T12:30:00-04:00', timeZone: 'America/Los_Angeles' },
-  end: { dateTime: '2026-03-30T13:00:00-04:00', timeZone: 'America/Los_Angeles' },
+  start: {
+    dateTime: '2026-03-30T12:30:00-04:00',
+    timeZone: 'America/Los_Angeles',
+  },
+  end: {
+    dateTime: '2026-03-30T13:00:00-04:00',
+    timeZone: 'America/Los_Angeles',
+  },
   allDay: false,
   status: 'confirmed',
   myResponseStatus: 'accepted',
@@ -41,7 +51,10 @@ const tentativeEvent: GCalEvent = {
   id: 'evt_006_20260402T200000Z',
   summary: 'Backend Community Sync',
   eventType: 'default',
-  start: { dateTime: '2026-04-02T16:00:00-04:00', timeZone: 'America/New_York' },
+  start: {
+    dateTime: '2026-04-02T16:00:00-04:00',
+    timeZone: 'America/New_York',
+  },
   end: { dateTime: '2026-04-02T16:45:00-04:00', timeZone: 'America/New_York' },
   allDay: false,
   status: 'confirmed',
@@ -52,8 +65,14 @@ const outOfOffice: GCalEvent = {
   id: 'evt_007',
   summary: 'Parental Leave',
   eventType: 'outOfOffice',
-  start: { dateTime: '2026-03-31T00:00:00-07:00', timeZone: 'America/Los_Angeles' },
-  end: { dateTime: '2026-06-27T00:00:00-07:00', timeZone: 'America/Los_Angeles' },
+  start: {
+    dateTime: '2026-03-31T00:00:00-07:00',
+    timeZone: 'America/Los_Angeles',
+  },
+  end: {
+    dateTime: '2026-06-27T00:00:00-07:00',
+    timeZone: 'America/Los_Angeles',
+  },
   allDay: false,
   status: 'confirmed',
 };
@@ -62,8 +81,14 @@ const declinedEvent: GCalEvent = {
   id: 'evt_008_20260330T170000Z',
   summary: 'Sprint Planning',
   eventType: 'default',
-  start: { dateTime: '2026-03-30T13:00:00-04:00', timeZone: 'America/Los_Angeles' },
-  end: { dateTime: '2026-03-30T14:00:00-04:00', timeZone: 'America/Los_Angeles' },
+  start: {
+    dateTime: '2026-03-30T13:00:00-04:00',
+    timeZone: 'America/Los_Angeles',
+  },
+  end: {
+    dateTime: '2026-03-30T14:00:00-04:00',
+    timeZone: 'America/Los_Angeles',
+  },
   allDay: false,
   status: 'confirmed',
   myResponseStatus: 'declined',
@@ -169,13 +194,19 @@ describe('gcalEventToDateRange', () => {
   });
 
   it('uses the default fallback label when summary is missing', () => {
-    const range = gcalEventToDateRange({ ...acceptedTimed, summary: undefined });
+    const range = gcalEventToDateRange({
+      ...acceptedTimed,
+      summary: undefined,
+    });
 
     expect(range.label).toBe('(busy)');
   });
 
   it('uses a custom fallback label when provided', () => {
-    const range = gcalEventToDateRange({ ...acceptedTimed, summary: undefined }, { fallbackLabel: 'Private' });
+    const range = gcalEventToDateRange(
+      { ...acceptedTimed, summary: undefined },
+      { fallbackLabel: 'Private' },
+    );
 
     expect(range.label).toBe('Private');
   });
@@ -183,10 +214,15 @@ describe('gcalEventToDateRange', () => {
 
 describe('gcalEventsToDateRanges', () => {
   it('filters out non-blocking events before mapping', () => {
-    const ranges = gcalEventsToDateRanges([acceptedTimed, workingLocation, transparentAllDay, tentativeEvent]);
+    const ranges = gcalEventsToDateRanges([
+      acceptedTimed,
+      workingLocation,
+      transparentAllDay,
+      tentativeEvent,
+    ]);
 
     expect(ranges).toHaveLength(2);
-    expect(ranges.map(range => range.id)).toEqual([acceptedTimed.id, tentativeEvent.id]);
+    expect(ranges.map((range) => range.id)).toEqual([acceptedTimed.id, tentativeEvent.id]);
   });
 
   it('returns an empty array for empty input', () => {
