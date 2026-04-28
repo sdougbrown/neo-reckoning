@@ -92,7 +92,8 @@ export function scoreSchedule(
     totalContextSwitches += switches;
   }
 
-  const avgContextSwitches = days.length > 0 ? totalContextSwitches / days.length : 0;
+  const avgContextSwitches =
+    days.length > 0 ? totalContextSwitches / days.length : 0;
 
   return {
     conflicts: totalConflicts,
@@ -108,7 +109,11 @@ export function scoreSchedule(
  * Returns sorted array of [start, end] minute pairs.
  */
 function mergeIntervals(
-  timedEntries: Array<{ slot: TimeSlot; startMinutes: number; endMinutes: number }>,
+  timedEntries: Array<{
+    slot: TimeSlot;
+    startMinutes: number;
+    endMinutes: number;
+  }>,
   dayStartMin: number,
   dayEndMin: number,
 ): [number, number][] {

@@ -1,5 +1,6 @@
 {
   "singleQuote": true,
   "jsxSingleQuote": false,
-  "sortPackageJson": false
+  "sortPackageJson": false,
+  "printWidth": 80
 }

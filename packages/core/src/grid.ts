@@ -9,7 +9,13 @@ import type {
   ViewFidelity,
 } from './types.js';
 import { RangeEvaluator } from './evaluator.js';
-import { compareDates, parseDate, formatDate, daysInMonth, getToday } from './time.js';
+import {
+  compareDates,
+  parseDate,
+  formatDate,
+  daysInMonth,
+  getToday,
+} from './time.js';
 
 /**
  * CalendarGrid — generates the data structure for rendering month-based
@@ -80,7 +86,11 @@ export class CalendarGrid {
       year: number;
       month: number;
       label: string;
-      dayCells: Array<{ date: string; dayOfMonth: number; isCurrentMonth: boolean }>;
+      dayCells: Array<{
+        date: string;
+        dayOfMonth: number;
+        isCurrentMonth: boolean;
+      }>;
     }> = [];
     const displayDates: string[] = [];
 
@@ -101,7 +111,13 @@ export class CalendarGrid {
       label: layout.label,
       weeks: this.chunkWeeks(
         layout.dayCells.map((day) =>
-          this.createDay(day.date, day.dayOfMonth, day.isCurrentMonth, today, dayContext),
+          this.createDay(
+            day.date,
+            day.dayOfMonth,
+            day.isCurrentMonth,
+            today,
+            dayContext,
+          ),
         ),
       ),
     }));
@@ -114,7 +130,11 @@ export class CalendarGrid {
     year: number;
     month: number;
     label: string;
-    dayCells: Array<{ date: string; dayOfMonth: number; isCurrentMonth: boolean }>;
+    dayCells: Array<{
+      date: string;
+      dayOfMonth: number;
+      isCurrentMonth: boolean;
+    }>;
   } {
     const totalDays = daysInMonth(year, month);
 
@@ -124,7 +144,11 @@ export class CalendarGrid {
     const leadingDays = (firstDayOfMonth - this.weekStartsOn + 7) % 7;
 
     // Build all day cells needed
-    const dayCells: Array<{ date: string; dayOfMonth: number; isCurrentMonth: boolean }> = [];
+    const dayCells: Array<{
+      date: string;
+      dayOfMonth: number;
+      isCurrentMonth: boolean;
+    }> = [];
 
     // Previous month padding
     const prevMonth = month === 0 ? 11 : month - 1;
@@ -148,7 +172,11 @@ export class CalendarGrid {
     let nextDay = 1;
     while (dayCells.length % 7 !== 0) {
       const dateStr = formatDate(new Date(nextYear, nextMonth, nextDay));
-      dayCells.push({ date: dateStr, dayOfMonth: nextDay, isCurrentMonth: false });
+      dayCells.push({
+        date: dateStr,
+        dayOfMonth: nextDay,
+        isCurrentMonth: false,
+      });
       nextDay++;
     }
 
@@ -181,7 +209,8 @@ export class CalendarGrid {
     },
   ): Day {
     const fidelity = this.fidelity;
-    const matchingRanges = dayContext.rangesByDate.get(dateStr) ?? CalendarGrid.EMPTY_RANGES;
+    const matchingRanges =
+      dayContext.rangesByDate.get(dateStr) ?? CalendarGrid.EMPTY_RANGES;
 
     if (fidelity === 'year') {
       // Year fidelity: only compute hasActivity, skip ranges[] and timeSlots[]
@@ -198,7 +227,11 @@ export class CalendarGrid {
     }
 
     // Month, week, and day fidelity: compute ranges[]
-    const ranges = this.evaluateRangesForDay(dateStr, matchingRanges, dayContext.rangeSetByDate);
+    const ranges = this.evaluateRangesForDay(
+      dateStr,
+      matchingRanges,
+      dayContext.rangeSetByDate,
+    );
 
     // Week and day fidelity: also compute timeSlots[]
     const timeSlots =
@@ -223,9 +256,11 @@ export class CalendarGrid {
   ): DayRangeInfo[] {
     const infos: DayRangeInfo[] = [];
     const prevRangeSet =
-      rangeSetByDate.get(this.shiftDay(dateStr, -1)) ?? CalendarGrid.EMPTY_RANGE_SET;
+      rangeSetByDate.get(this.shiftDay(dateStr, -1)) ??
+      CalendarGrid.EMPTY_RANGE_SET;
     const nextRangeSet =
-      rangeSetByDate.get(this.shiftDay(dateStr, 1)) ?? CalendarGrid.EMPTY_RANGE_SET;
+      rangeSetByDate.get(this.shiftDay(dateStr, 1)) ??
+      CalendarGrid.EMPTY_RANGE_SET;
 
     for (const range of matchingRanges) {
       const prevInRange = prevRangeSet.has(range);
@@ -237,7 +272,9 @@ export class CalendarGrid {
         isStart: !prevInRange,
         isEnd: !nextInRange,
         isContinuation: prevInRange && nextInRange,
-        ...(range.displayType !== undefined ? { displayType: range.displayType } : {}),
+        ...(range.displayType !== undefined
+          ? { displayType: range.displayType }
+          : {}),
       });
     }
 
@@ -266,7 +303,11 @@ export class CalendarGrid {
     const contextTo = this.shiftDay(maxDate, 1);
 
     for (const range of this.ranges) {
-      const matchingDates = this.evaluator.getMatchingDates(range, contextFrom, contextTo);
+      const matchingDates = this.evaluator.getMatchingDates(
+        range,
+        contextFrom,
+        contextTo,
+      );
 
       for (const dateStr of matchingDates) {
         const dateRanges = rangesByDate.get(dateStr);
@@ -290,7 +331,10 @@ export class CalendarGrid {
 
   private formatMonthLabel(year: number, month: number): string {
     const date = new Date(year, month, 1);
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long' };
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'long',
+    };
     return new Intl.DateTimeFormat(this.locale, options).format(date);
   }
 

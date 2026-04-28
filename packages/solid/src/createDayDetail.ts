@@ -21,7 +21,11 @@ export function createDayDetail(
   const resolvedConfig = toAccessor(config);
   const model = createMemo(() => {
     const current = resolvedConfig();
-    return buildDayDetailModel(current.date, current.ranges, current.userTimezone);
+    return buildDayDetailModel(
+      current.date,
+      current.ranges,
+      current.userTimezone,
+    );
   });
 
   return {

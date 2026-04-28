@@ -1,4 +1,9 @@
-import type { TimelineGridConfig, TimelineSlot, PositionedEvent, CalendarEvent } from './types.js';
+import type {
+  TimelineGridConfig,
+  TimelineSlot,
+  PositionedEvent,
+  CalendarEvent,
+} from './types.js';
 import { formatTime } from './time.js';
 
 /**
@@ -26,7 +31,11 @@ export class TimelineGrid {
 
   private generate(): TimelineSlot[] {
     const slots: TimelineSlot[] = [];
-    const positioned = computeEventPositions(this.events, this.startHour, this.endHour);
+    const positioned = computeEventPositions(
+      this.events,
+      this.startHour,
+      this.endHour,
+    );
 
     let currentMinutes = this.startHour * 60;
     const endMinutes = this.endHour * 60;
@@ -89,8 +98,12 @@ export function computeEventPositions(
     const aStart = a.start.getHours() * 60 + a.start.getMinutes();
     const bStart = b.start.getHours() * 60 + b.start.getMinutes();
     if (aStart !== bStart) return aStart - bStart;
-    const aEnd = a.end ? a.end.getHours() * 60 + a.end.getMinutes() : aStart + 30;
-    const bEnd = b.end ? b.end.getHours() * 60 + b.end.getMinutes() : bStart + 30;
+    const aEnd = a.end
+      ? a.end.getHours() * 60 + a.end.getMinutes()
+      : aStart + 30;
+    const bEnd = b.end
+      ? b.end.getHours() * 60 + b.end.getMinutes()
+      : bStart + 30;
     return bEnd - bStart - (aEnd - aStart); // Longer events first
   });
 
@@ -144,7 +157,8 @@ export function computeEventPositions(
 
     for (const assignment of group) {
       const top = ((assignment.startMin - timelineStart) / totalMinutes) * 100;
-      const height = ((assignment.endMin - assignment.startMin) / totalMinutes) * 100;
+      const height =
+        ((assignment.endMin - assignment.startMin) / totalMinutes) * 100;
 
       positioned.push({
         event: assignment.event,
@@ -163,8 +177,20 @@ export function computeEventPositions(
  * Find groups of events that overlap with each other (connected components).
  */
 function findOverlapGroups(
-  assignments: Array<{ event: CalendarEvent; column: number; startMin: number; endMin: number }>,
-): Array<Array<{ event: CalendarEvent; column: number; startMin: number; endMin: number }>> {
+  assignments: Array<{
+    event: CalendarEvent;
+    column: number;
+    startMin: number;
+    endMin: number;
+  }>,
+): Array<
+  Array<{
+    event: CalendarEvent;
+    column: number;
+    startMin: number;
+    endMin: number;
+  }>
+> {
   if (assignments.length === 0) return [];
 
   const sorted = [...assignments].sort((a, b) => a.startMin - b.startMin);

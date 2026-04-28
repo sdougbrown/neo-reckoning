@@ -24,7 +24,10 @@ export type DateSelectionAction =
   | { type: 'hover'; date: string }
   | { type: 'clear' };
 
-function buildSelection(selection: DateSelection, next: DateSelection): DateSelection {
+function buildSelection(
+  selection: DateSelection,
+  next: DateSelection,
+): DateSelection {
   if (
     selection.start === next.start &&
     selection.end === next.end &&

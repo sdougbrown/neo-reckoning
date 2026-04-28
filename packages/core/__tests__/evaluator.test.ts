@@ -141,8 +141,16 @@ describe('RangeEvaluator', () => {
       });
       const slots = utcEvaluator.getTimeSlots('2026-03-21', range);
       expect(slots).toHaveLength(2);
-      expect(slots[0]).toMatchObject({ startTime: '09:00', endTime: '09:30', duration: 30 });
-      expect(slots[1]).toMatchObject({ startTime: '17:00', endTime: '17:30', duration: 30 });
+      expect(slots[0]).toMatchObject({
+        startTime: '09:00',
+        endTime: '09:30',
+        duration: 30,
+      });
+      expect(slots[1]).toMatchObject({
+        startTime: '17:00',
+        endTime: '17:30',
+        duration: 30,
+      });
     });
 
     it('generates single time block for startTime + endTime', () => {
@@ -259,7 +267,9 @@ describe('RangeEvaluator', () => {
         duration: 60,
       });
       const metadata = {
-        attendees: [{ email: 'alice@example.com', role: 'required', status: 'accepted' }],
+        attendees: [
+          { email: 'alice@example.com', role: 'required', status: 'accepted' },
+        ],
         organizer: { email: 'organizer@example.com', name: 'Organizer' },
         location: 'Room 500',
       };
@@ -310,7 +320,11 @@ describe('RangeEvaluator', () => {
 
       // Mondays in March 2026: 2, 9, 16, 23, 30
       expect(occurrences).toHaveLength(5);
-      expect(occurrences[0]).toMatchObject({ date: '2026-03-02', allDay: true, startTime: null });
+      expect(occurrences[0]).toMatchObject({
+        date: '2026-03-02',
+        allDay: true,
+        startTime: null,
+      });
       expect(occurrences.every((o) => o.allDay)).toBe(true);
     });
 
@@ -387,7 +401,9 @@ describe('RangeEvaluator', () => {
       expect(occurrences).toHaveLength(28);
       expect(occurrences[0].date).toBe('2026-02-01');
       expect(occurrences.at(-1)?.date).toBe('2026-02-28');
-      expect(occurrences.every((o) => o.date.startsWith('2026-02-'))).toBe(true);
+      expect(occurrences.every((o) => o.date.startsWith('2026-02-'))).toBe(
+        true,
+      );
     });
 
     it('expands weekday + month recurrence over a broad window', () => {

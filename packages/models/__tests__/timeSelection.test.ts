@@ -31,7 +31,12 @@ describe('time selection helpers', () => {
 
   it('sets endTime on the second click after snapping', () => {
     const selection = updateTimeSelection(
-      { date: '2026-03-10', startTime: '14:15', endTime: null, preview: '14:30' },
+      {
+        date: '2026-03-10',
+        startTime: '14:15',
+        endTime: null,
+        preview: '14:30',
+      },
       { type: 'click', time: '15:02' },
       { intervalMinutes: 15 },
     );
@@ -61,7 +66,12 @@ describe('time selection helpers', () => {
 
   it('resets the selection on the third click', () => {
     const selection = updateTimeSelection(
-      { date: '2026-03-10', startTime: '14:00', endTime: '15:00', preview: null },
+      {
+        date: '2026-03-10',
+        startTime: '14:00',
+        endTime: '15:00',
+        preview: null,
+      },
       { type: 'click', time: '16:10' },
       { intervalMinutes: 30 },
     );
@@ -90,7 +100,12 @@ describe('time selection helpers', () => {
   });
 
   it('blocks clicks for unselectable times', () => {
-    const selection = { date: '2026-03-10', startTime: null, endTime: null, preview: null };
+    const selection = {
+      date: '2026-03-10',
+      startTime: null,
+      endTime: null,
+      preview: null,
+    };
     const next = updateTimeSelection(
       selection,
       { type: 'click', time: '14:00' },
@@ -101,7 +116,12 @@ describe('time selection helpers', () => {
   });
 
   it('blocks hover for unselectable times', () => {
-    const selection = { date: '2026-03-10', startTime: '14:00', endTime: null, preview: null };
+    const selection = {
+      date: '2026-03-10',
+      startTime: '14:00',
+      endTime: null,
+      preview: null,
+    };
     const next = updateTimeSelection(
       selection,
       { type: 'hover', time: '14:30' },
@@ -117,7 +137,12 @@ describe('time selection helpers', () => {
       { type: 'hover', time: '14:17' },
       { intervalMinutes: 15 },
     );
-    const inactive = { date: '2026-03-10', startTime: null, endTime: null, preview: null };
+    const inactive = {
+      date: '2026-03-10',
+      startTime: null,
+      endTime: null,
+      preview: null,
+    };
 
     expect(active).toEqual({
       date: '2026-03-10',
@@ -125,10 +150,17 @@ describe('time selection helpers', () => {
       endTime: null,
       preview: '14:15',
     });
-    expect(updateTimeSelection(inactive, { type: 'hover', time: '14:17' })).toBe(inactive);
+    expect(
+      updateTimeSelection(inactive, { type: 'hover', time: '14:17' }),
+    ).toBe(inactive);
     expect(
       updateTimeSelection(
-        { date: '2026-03-10', startTime: '14:00', endTime: '15:00', preview: null },
+        {
+          date: '2026-03-10',
+          startTime: '14:00',
+          endTime: '15:00',
+          preview: null,
+        },
         { type: 'hover', time: '14:17' },
       ),
     ).toEqual({
@@ -167,7 +199,12 @@ describe('time selection helpers', () => {
 
   it('preserves date when clearing times', () => {
     const selection = updateTimeSelection(
-      { date: '2026-03-10', startTime: '14:00', endTime: '15:00', preview: '14:30' },
+      {
+        date: '2026-03-10',
+        startTime: '14:00',
+        endTime: '15:00',
+        preview: '14:30',
+      },
       { type: 'clear' },
     );
 
@@ -180,7 +217,12 @@ describe('time selection helpers', () => {
   });
 
   it('returns the same reference for no-op actions', () => {
-    const selection = { date: '2026-03-10', startTime: null, endTime: null, preview: null };
+    const selection = {
+      date: '2026-03-10',
+      startTime: null,
+      endTime: null,
+      preview: null,
+    };
     const next = updateTimeSelection(selection, { type: 'clear' });
 
     expect(next).toBe(selection);

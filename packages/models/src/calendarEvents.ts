@@ -14,7 +14,9 @@ export interface CalendarEventsModelConfig {
   userTimezone?: string;
 }
 
-export function buildCalendarEvents(config: CalendarEventsModelConfig): CalendarEvent[] {
+export function buildCalendarEvents(
+  config: CalendarEventsModelConfig,
+): CalendarEvent[] {
   const { ranges, importedEvents, from, to, userTimezone } = config;
   const evaluator = new RangeEvaluator(userTimezone);
 

@@ -69,7 +69,10 @@ function createLoadedSession(): CalendarSession {
 }
 
 function loadIcsFixture(name: string): string {
-  return readFileSync(new URL(`../../ical/__tests__/fixtures/${name}`, import.meta.url), 'utf8');
+  return readFileSync(
+    new URL(`../../ical/__tests__/fixtures/${name}`, import.meta.url),
+    'utf8',
+  );
 }
 
 describe('handleToolCall', () => {
@@ -103,7 +106,12 @@ describe('handleToolCall', () => {
         to: '2026-06-30',
       },
       detected_data_window: null,
-      sample_labels: ['Daily Standup', 'Code Review', 'Holiday', 'Sprint Planning'],
+      sample_labels: [
+        'Daily Standup',
+        'Code Review',
+        'Holiday',
+        'Sprint Planning',
+      ],
       has_more_labels: false,
     });
   });
@@ -156,8 +164,14 @@ describe('handleToolCall', () => {
           id: 'evt_001',
           summary: 'Team Sync',
           eventType: 'default',
-          start: { dateTime: '2026-03-30T09:00:00-04:00', timeZone: 'America/New_York' },
-          end: { dateTime: '2026-03-30T10:00:00-04:00', timeZone: 'America/New_York' },
+          start: {
+            dateTime: '2026-03-30T09:00:00-04:00',
+            timeZone: 'America/New_York',
+          },
+          end: {
+            dateTime: '2026-03-30T10:00:00-04:00',
+            timeZone: 'America/New_York',
+          },
           allDay: false,
           status: 'confirmed',
           myResponseStatus: 'accepted',
@@ -176,8 +190,14 @@ describe('handleToolCall', () => {
           id: 'evt_003',
           summary: 'Focus Block',
           eventType: 'default',
-          start: { dateTime: '2026-03-30T14:00:00-04:00', timeZone: 'America/New_York' },
-          end: { dateTime: '2026-03-30T16:00:00-04:00', timeZone: 'America/New_York' },
+          start: {
+            dateTime: '2026-03-30T14:00:00-04:00',
+            timeZone: 'America/New_York',
+          },
+          end: {
+            dateTime: '2026-03-30T16:00:00-04:00',
+            timeZone: 'America/New_York',
+          },
           allDay: false,
           status: 'confirmed',
         },
@@ -185,8 +205,14 @@ describe('handleToolCall', () => {
           id: 'evt_004',
           summary: 'Declined Meeting',
           eventType: 'default',
-          start: { dateTime: '2026-03-30T11:00:00-04:00', timeZone: 'America/New_York' },
-          end: { dateTime: '2026-03-30T12:00:00-04:00', timeZone: 'America/New_York' },
+          start: {
+            dateTime: '2026-03-30T11:00:00-04:00',
+            timeZone: 'America/New_York',
+          },
+          end: {
+            dateTime: '2026-03-30T12:00:00-04:00',
+            timeZone: 'America/New_York',
+          },
           allDay: false,
           status: 'confirmed',
           myResponseStatus: 'declined',
@@ -198,7 +224,10 @@ describe('handleToolCall', () => {
         data: JSON.stringify(gcalEvents),
         id: 'alice',
       });
-      const body = parseJsonContent<{ ranges_loaded: number; calendar_id: string }>(result);
+      const body = parseJsonContent<{
+        ranges_loaded: number;
+        calendar_id: string;
+      }>(result);
 
       expect(body.ranges_loaded).toBe(2);
       expect(body.calendar_id).toBe('alice');
@@ -232,8 +261,14 @@ describe('handleToolCall', () => {
           isAllDay: false,
           isCancelled: false,
           type: 'singleInstance',
-          start: { dateTime: '2026-03-30T09:00:00.0000000', timeZone: 'Eastern Standard Time' },
-          end: { dateTime: '2026-03-30T10:00:00.0000000', timeZone: 'Eastern Standard Time' },
+          start: {
+            dateTime: '2026-03-30T09:00:00.0000000',
+            timeZone: 'Eastern Standard Time',
+          },
+          end: {
+            dateTime: '2026-03-30T10:00:00.0000000',
+            timeZone: 'Eastern Standard Time',
+          },
           showAs: 'busy',
           responseStatus: { response: 'accepted' },
         },
@@ -243,8 +278,14 @@ describe('handleToolCall', () => {
           isAllDay: true,
           isCancelled: false,
           type: 'singleInstance',
-          start: { dateTime: '2026-03-30T00:00:00.0000000', timeZone: 'Eastern Standard Time' },
-          end: { dateTime: '2026-03-31T00:00:00.0000000', timeZone: 'Eastern Standard Time' },
+          start: {
+            dateTime: '2026-03-30T00:00:00.0000000',
+            timeZone: 'Eastern Standard Time',
+          },
+          end: {
+            dateTime: '2026-03-31T00:00:00.0000000',
+            timeZone: 'Eastern Standard Time',
+          },
           showAs: 'workingElsewhere',
         },
         {
@@ -253,8 +294,14 @@ describe('handleToolCall', () => {
           isAllDay: false,
           isCancelled: false,
           type: 'singleInstance',
-          start: { dateTime: '2026-03-30T14:00:00.0000000', timeZone: 'Pacific Standard Time' },
-          end: { dateTime: '2026-03-30T15:00:00.0000000', timeZone: 'Pacific Standard Time' },
+          start: {
+            dateTime: '2026-03-30T14:00:00.0000000',
+            timeZone: 'Pacific Standard Time',
+          },
+          end: {
+            dateTime: '2026-03-30T15:00:00.0000000',
+            timeZone: 'Pacific Standard Time',
+          },
           showAs: 'busy',
         },
         {
@@ -263,8 +310,14 @@ describe('handleToolCall', () => {
           isAllDay: false,
           isCancelled: false,
           type: 'singleInstance',
-          start: { dateTime: '2026-03-30T09:30:00.0000000', timeZone: 'Eastern Standard Time' },
-          end: { dateTime: '2026-03-30T10:00:00.0000000', timeZone: 'Eastern Standard Time' },
+          start: {
+            dateTime: '2026-03-30T09:30:00.0000000',
+            timeZone: 'Eastern Standard Time',
+          },
+          end: {
+            dateTime: '2026-03-30T10:00:00.0000000',
+            timeZone: 'Eastern Standard Time',
+          },
           showAs: 'busy',
           responseStatus: { response: 'declined' },
         },
@@ -276,7 +329,10 @@ describe('handleToolCall', () => {
         id: 'bob',
       });
 
-      const body = parseJsonContent<{ ranges_loaded: number; calendar_id: string }>(result);
+      const body = parseJsonContent<{
+        ranges_loaded: number;
+        calendar_id: string;
+      }>(result);
       expect(body.ranges_loaded).toBe(2);
       expect(body.calendar_id).toBe('bob');
 
@@ -307,7 +363,12 @@ describe('handleToolCall', () => {
 
     expect(
       parseJsonContent<
-        Array<{ id: string; rangeCount: number; labels: string[]; has_more_labels: boolean }>
+        Array<{
+          id: string;
+          rangeCount: number;
+          labels: string[];
+          has_more_labels: boolean;
+        }>
       >(result),
     ).toEqual([
       {
@@ -357,7 +418,10 @@ describe('handleToolCall', () => {
       day_start: '08:00',
       day_end: '18:00',
     });
-    const freeSlots = parseJsonContent<{ free_slots: FreeSlot[]; total: number }>(result);
+    const freeSlots = parseJsonContent<{
+      free_slots: FreeSlot[];
+      total: number;
+    }>(result);
 
     expect(freeSlots).toEqual({
       free_slots: [
@@ -577,7 +641,12 @@ describe('handleToolCall', () => {
           startTime: string;
           endTime: string;
           found_in_calendars: string[];
-          attendees: Array<{ email: string; name?: string; role?: string; status?: string }>;
+          attendees: Array<{
+            email: string;
+            name?: string;
+            role?: string;
+            status?: string;
+          }>;
           organizer: { email: string; name?: string };
         }>;
         total: number;
@@ -675,7 +744,12 @@ describe('handleToolCall', () => {
 
     expect(
       parseJsonContent<{
-        common_slots: Array<{ date: string; start: string; end: string; duration_minutes: number }>;
+        common_slots: Array<{
+          date: string;
+          start: string;
+          end: string;
+          duration_minutes: number;
+        }>;
         total: number;
         calendars_checked: string[];
         search_window: { from: string; to: string };
@@ -753,7 +827,12 @@ describe('handleToolCall', () => {
 
     expect(
       parseJsonContent<{
-        common_slots: Array<{ date: string; start: string; end: string; duration_minutes: number }>;
+        common_slots: Array<{
+          date: string;
+          start: string;
+          end: string;
+          duration_minutes: number;
+        }>;
         total: number;
       }>(result),
     ).toEqual({
@@ -822,7 +901,12 @@ describe('handleToolCall', () => {
 
     expect(
       parseJsonContent<{
-        common_slots: Array<{ date: string; start: string; end: string; duration_minutes: number }>;
+        common_slots: Array<{
+          date: string;
+          start: string;
+          end: string;
+          duration_minutes: number;
+        }>;
         total: number;
         calendars_checked: string[];
         search_window: { from: string; to: string };
@@ -968,7 +1052,10 @@ describe('handleToolCall', () => {
       from: '2026-03-23',
       to: '2026-03-27',
     });
-    const occurrences = parseJsonContent<{ occurrences: Occurrence[]; total: number }>(result);
+    const occurrences = parseJsonContent<{
+      occurrences: Occurrence[];
+      total: number;
+    }>(result);
 
     expect(occurrences).toEqual({
       occurrences: [
@@ -1053,10 +1140,13 @@ describe('handleToolCall', () => {
     expect(suggestion.before.conflicts).toBeGreaterThan(0);
     expect(suggestion.after.conflicts).toBe(0);
 
-    const dayDetail = await handleToolCall(session, 'day_detail', { date: '2026-03-25' });
-    const detail = parseJsonContent<{ timeSlots: TimeSlot[]; allDayRanges: DayRangeInfo[] }>(
-      dayDetail,
-    );
+    const dayDetail = await handleToolCall(session, 'day_detail', {
+      date: '2026-03-25',
+    });
+    const detail = parseJsonContent<{
+      timeSlots: TimeSlot[];
+      allDayRanges: DayRangeInfo[];
+    }>(dayDetail);
 
     expect(detail.timeSlots).toEqual(
       expect.arrayContaining([
@@ -1087,7 +1177,9 @@ describe('handleToolCall', () => {
     });
 
     expect(
-      parseJsonContent<{ changes_applied: number; total_ranges: number }>(applyResult),
+      parseJsonContent<{ changes_applied: number; total_ranges: number }>(
+        applyResult,
+      ),
     ).toEqual({
       changes_applied: 1,
       total_ranges: 4,
@@ -1098,7 +1190,11 @@ describe('handleToolCall', () => {
       to: '2026-03-26',
     });
 
-    expect(parseJsonContent<{ conflicts: unknown[]; total: number }>(conflictsResult)).toEqual({
+    expect(
+      parseJsonContent<{ conflicts: unknown[]; total: number }>(
+        conflictsResult,
+      ),
+    ).toEqual({
       conflicts: [],
       total: 0,
     });
@@ -1127,7 +1223,12 @@ describe('handleToolCall', () => {
     const calendarsResult = await handleToolCall(session, 'list_calendars');
     expect(
       parseJsonContent<
-        Array<{ id: string; rangeCount: number; labels: string[]; has_more_labels: boolean }>
+        Array<{
+          id: string;
+          rangeCount: number;
+          labels: string[];
+          has_more_labels: boolean;
+        }>
       >(calendarsResult),
     ).toEqual([
       expect.objectContaining({
@@ -1195,7 +1296,9 @@ describe('handleToolCall', () => {
     });
 
     expect(missingRange.isError).toBe(true);
-    expect(getTextContent(missingRange)).toContain('Range "missing" was not found');
+    expect(getTextContent(missingRange)).toContain(
+      'Range "missing" was not found',
+    );
 
     const invalidLoad = await handleToolCall(session, 'load_calendar', {
       source: 'unknown',

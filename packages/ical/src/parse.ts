@@ -60,7 +60,10 @@ function getRangeId(component: Component, event: Event): string {
   return event.uid || hashString(component.toString());
 }
 
-function getTimezone(startProperty: Property | null, start: Time): string | null | undefined {
+function getTimezone(
+  startProperty: Property | null,
+  start: Time,
+): string | null | undefined {
   const tzid = startProperty?.getFirstParameter('tzid');
   if (tzid) {
     return tzid;
@@ -121,7 +124,10 @@ function getTimeFields(
     return {};
   }
 
-  const fields: Pick<DateRange, 'startTime' | 'endTime' | 'duration' | 'timezone'> = {
+  const fields: Pick<
+    DateRange,
+    'startTime' | 'endTime' | 'duration' | 'timezone'
+  > = {
     startTime: formatTime(start),
   };
 
@@ -158,7 +164,9 @@ function stripMailto(value: string): string {
   return value.replace(/^mailto:/i, '');
 }
 
-function mapAttendeeRole(value: string | null | undefined): AttendeeInfo['role'] | undefined {
+function mapAttendeeRole(
+  value: string | null | undefined,
+): AttendeeInfo['role'] | undefined {
   switch (value?.toUpperCase()) {
     case 'REQ-PARTICIPANT':
       return 'required';
@@ -173,7 +181,9 @@ function mapAttendeeRole(value: string | null | undefined): AttendeeInfo['role']
   }
 }
 
-function mapAttendeeStatus(value: string | null | undefined): AttendeeInfo['status'] | undefined {
+function mapAttendeeStatus(
+  value: string | null | undefined,
+): AttendeeInfo['status'] | undefined {
   switch (value?.toUpperCase()) {
     case 'ACCEPTED':
       return 'accepted';
@@ -295,7 +305,9 @@ function overlapsWindow(range: DateRange, window: ParseWindow): boolean {
 
   if (range.dates?.length) {
     return range.dates.some(
-      (date) => compareDates(date, windowFrom) >= 0 && compareDates(date, windowTo) <= 0,
+      (date) =>
+        compareDates(date, windowFrom) >= 0 &&
+        compareDates(date, windowTo) <= 0,
     );
   }
 
@@ -308,7 +320,9 @@ function overlapsWindow(range: DateRange, window: ParseWindow): boolean {
   }
 
   const hasRecurrence = Boolean(
-    range.everyWeekday?.length || range.everyDate?.length || range.everyMonth?.length,
+    range.everyWeekday?.length ||
+    range.everyDate?.length ||
+    range.everyMonth?.length,
   );
   if (hasRecurrence) {
     return true;
@@ -317,7 +331,10 @@ function overlapsWindow(range: DateRange, window: ParseWindow): boolean {
   return true;
 }
 
-function buildDateRange(component: Component, window: ParseWindow): DateRange | null {
+function buildDateRange(
+  component: Component,
+  window: ParseWindow,
+): DateRange | null {
   if (component.hasProperty('recurrence-id')) {
     return null;
   }
@@ -360,7 +377,11 @@ function buildDateRange(component: Component, window: ParseWindow): DateRange | 
   const status = component.getFirstPropertyValue('status');
   if (typeof status === 'string') {
     const normalized = status.toLowerCase();
-    if (normalized === 'tentative' || normalized === 'confirmed' || normalized === 'cancelled') {
+    if (
+      normalized === 'tentative' ||
+      normalized === 'confirmed' ||
+      normalized === 'cancelled'
+    ) {
       metadata.status = normalized;
     }
   }
@@ -372,12 +393,17 @@ function buildDateRange(component: Component, window: ParseWindow): DateRange | 
 
   const rrules = component.getAllProperties('rrule');
   if (rrules.length > 1) {
-    console.warn(`Skipping VEVENT ${baseRange.id}: multiple RRULE properties are not supported`);
+    console.warn(
+      `Skipping VEVENT ${baseRange.id}: multiple RRULE properties are not supported`,
+    );
     return null;
   }
 
   if (rrules.length === 1) {
-    const rule = rrules[0].getFirstValue() as Time | InstanceType<typeof ICAL.Recur> | null;
+    const rule = rrules[0].getFirstValue() as
+      | Time
+      | InstanceType<typeof ICAL.Recur>
+      | null;
     if (!(rule instanceof ICAL.Recur)) {
       console.warn(`Skipping VEVENT ${baseRange.id}: invalid RRULE value`);
       return null;
@@ -416,7 +442,9 @@ function buildDateRange(component: Component, window: ParseWindow): DateRange | 
     baseRange.exceptDates = exceptDates;
     if (baseRange.dates?.length) {
       const exceptDateSet = new Set(exceptDates);
-      baseRange.dates = baseRange.dates.filter((date) => !exceptDateSet.has(date));
+      baseRange.dates = baseRange.dates.filter(
+        (date) => !exceptDateSet.has(date),
+      );
       if (baseRange.dates.length === 0) {
         return null;
       }

@@ -1,5 +1,8 @@
 import { useMemo, useCallback } from 'preact/hooks';
-import { buildCalendarModel, createCalendarController } from '@daywatch/cal-models';
+import {
+  buildCalendarModel,
+  createCalendarController,
+} from '@daywatch/cal-models';
 import type { CalendarModelConfig } from '@daywatch/cal-models';
 import type { Month } from '@daywatch/cal';
 

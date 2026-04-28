@@ -1,4 +1,8 @@
-export { validateRangeCreate, validateRangePatch, validateRanges } from './validate.js';
+export {
+  validateRangeCreate,
+  validateRangePatch,
+  validateRanges,
+} from './validate.js';
 export type {
   DateRangeInput,
   RangeValidationIssue,

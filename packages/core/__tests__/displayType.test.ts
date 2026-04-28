@@ -33,12 +33,22 @@ describe('resolveDisplayType', () => {
   });
 
   it('returns chip for timed range at month fidelity (startTime)', () => {
-    const range: DateRange = { id: 'r1', label: 'R1', startTime: '09:00', endTime: '10:00' };
+    const range: DateRange = {
+      id: 'r1',
+      label: 'R1',
+      startTime: '09:00',
+      endTime: '10:00',
+    };
     expect(resolveDisplayType(range, 'month')).toBe('chip');
   });
 
   it('returns block for timed range at day fidelity (startTime)', () => {
-    const range: DateRange = { id: 'r1', label: 'R1', startTime: '09:00', endTime: '10:00' };
+    const range: DateRange = {
+      id: 'r1',
+      label: 'R1',
+      startTime: '09:00',
+      endTime: '10:00',
+    };
     expect(resolveDisplayType(range, 'day')).toBe('block');
   });
 
@@ -63,7 +73,12 @@ describe('resolveDisplayType', () => {
   });
 
   it('auto resolves when displayType is auto', () => {
-    const range: DateRange = { id: 'r1', label: 'R1', displayType: 'auto', everyHour: [9] };
+    const range: DateRange = {
+      id: 'r1',
+      label: 'R1',
+      displayType: 'auto',
+      everyHour: [9],
+    };
     expect(resolveDisplayType(range, 'month')).toBe('chip');
   });
 
@@ -133,7 +148,11 @@ describe('displayType pass-through', () => {
       };
 
       const evaluator = new RangeEvaluator();
-      const occurrences = evaluator.expand(range, new Date(2026, 2, 1), new Date(2026, 2, 31));
+      const occurrences = evaluator.expand(
+        range,
+        new Date(2026, 2, 1),
+        new Date(2026, 2, 31),
+      );
 
       expect(occurrences).toHaveLength(1);
       expect(occurrences[0].displayType).toBe('chip');
@@ -148,7 +167,11 @@ describe('displayType pass-through', () => {
       };
 
       const evaluator = new RangeEvaluator();
-      const occurrences = evaluator.expand(range, new Date(2026, 2, 1), new Date(2026, 2, 31));
+      const occurrences = evaluator.expand(
+        range,
+        new Date(2026, 2, 1),
+        new Date(2026, 2, 31),
+      );
 
       expect(occurrences).toHaveLength(1);
       expect(occurrences[0].displayType).toBe('fill');
@@ -162,7 +185,11 @@ describe('displayType pass-through', () => {
       };
 
       const evaluator = new RangeEvaluator();
-      const occurrences = evaluator.expand(range, new Date(2026, 2, 1), new Date(2026, 2, 31));
+      const occurrences = evaluator.expand(
+        range,
+        new Date(2026, 2, 1),
+        new Date(2026, 2, 31),
+      );
 
       expect(occurrences).toHaveLength(1);
       expect(occurrences[0].displayType).toBeUndefined();

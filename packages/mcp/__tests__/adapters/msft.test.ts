@@ -11,8 +11,14 @@ const normalMeeting: MsftGraphEvent = {
   isAllDay: false,
   isCancelled: false,
   type: 'singleInstance',
-  start: { dateTime: '2026-03-30T09:00:00.0000000', timeZone: 'Eastern Standard Time' },
-  end: { dateTime: '2026-03-30T10:00:00.0000000', timeZone: 'Eastern Standard Time' },
+  start: {
+    dateTime: '2026-03-30T09:00:00.0000000',
+    timeZone: 'Eastern Standard Time',
+  },
+  end: {
+    dateTime: '2026-03-30T10:00:00.0000000',
+    timeZone: 'Eastern Standard Time',
+  },
   showAs: 'busy',
   responseStatus: { response: 'accepted' },
   webLink: 'https://outlook.office365.com/owa/?itemid=msft_001',
@@ -24,8 +30,14 @@ const freeBlock: MsftGraphEvent = {
   isAllDay: false,
   isCancelled: false,
   type: 'singleInstance',
-  start: { dateTime: '2026-03-30T12:00:00.0000000', timeZone: 'Eastern Standard Time' },
-  end: { dateTime: '2026-03-30T13:00:00.0000000', timeZone: 'Eastern Standard Time' },
+  start: {
+    dateTime: '2026-03-30T12:00:00.0000000',
+    timeZone: 'Eastern Standard Time',
+  },
+  end: {
+    dateTime: '2026-03-30T13:00:00.0000000',
+    timeZone: 'Eastern Standard Time',
+  },
   showAs: 'free',
 };
 
@@ -35,8 +47,14 @@ const oofEvent: MsftGraphEvent = {
   isAllDay: true,
   isCancelled: false,
   type: 'singleInstance',
-  start: { dateTime: '2026-04-01T00:00:00.0000000', timeZone: 'Eastern Standard Time' },
-  end: { dateTime: '2026-04-04T00:00:00.0000000', timeZone: 'Eastern Standard Time' },
+  start: {
+    dateTime: '2026-04-01T00:00:00.0000000',
+    timeZone: 'Eastern Standard Time',
+  },
+  end: {
+    dateTime: '2026-04-04T00:00:00.0000000',
+    timeZone: 'Eastern Standard Time',
+  },
   showAs: 'oof',
 };
 
@@ -46,8 +64,14 @@ const workingElsewhere: MsftGraphEvent = {
   isAllDay: true,
   isCancelled: false,
   type: 'singleInstance',
-  start: { dateTime: '2026-03-30T00:00:00.0000000', timeZone: 'Pacific Standard Time' },
-  end: { dateTime: '2026-03-31T00:00:00.0000000', timeZone: 'Pacific Standard Time' },
+  start: {
+    dateTime: '2026-03-30T00:00:00.0000000',
+    timeZone: 'Pacific Standard Time',
+  },
+  end: {
+    dateTime: '2026-03-31T00:00:00.0000000',
+    timeZone: 'Pacific Standard Time',
+  },
   showAs: 'workingElsewhere',
 };
 
@@ -57,8 +81,14 @@ const tentativeEvent: MsftGraphEvent = {
   isAllDay: false,
   isCancelled: false,
   type: 'singleInstance',
-  start: { dateTime: '2026-03-30T14:00:00.0000000', timeZone: 'Pacific Standard Time' },
-  end: { dateTime: '2026-03-30T15:00:00.0000000', timeZone: 'Pacific Standard Time' },
+  start: {
+    dateTime: '2026-03-30T14:00:00.0000000',
+    timeZone: 'Pacific Standard Time',
+  },
+  end: {
+    dateTime: '2026-03-30T15:00:00.0000000',
+    timeZone: 'Pacific Standard Time',
+  },
   showAs: 'tentative',
   responseStatus: { response: 'tentativelyAccepted' },
 };
@@ -69,8 +99,14 @@ const declinedEvent: MsftGraphEvent = {
   isAllDay: false,
   isCancelled: false,
   type: 'singleInstance',
-  start: { dateTime: '2026-03-30T09:30:00.0000000', timeZone: 'Eastern Standard Time' },
-  end: { dateTime: '2026-03-30T10:00:00.0000000', timeZone: 'Eastern Standard Time' },
+  start: {
+    dateTime: '2026-03-30T09:30:00.0000000',
+    timeZone: 'Eastern Standard Time',
+  },
+  end: {
+    dateTime: '2026-03-30T10:00:00.0000000',
+    timeZone: 'Eastern Standard Time',
+  },
   showAs: 'busy',
   responseStatus: { response: 'declined' },
 };
@@ -87,8 +123,14 @@ const seriesMaster: MsftGraphEvent = {
   isAllDay: false,
   isCancelled: false,
   type: 'seriesMaster',
-  start: { dateTime: '2026-03-30T11:00:00.0000000', timeZone: 'Eastern Standard Time' },
-  end: { dateTime: '2026-03-30T11:30:00.0000000', timeZone: 'Eastern Standard Time' },
+  start: {
+    dateTime: '2026-03-30T11:00:00.0000000',
+    timeZone: 'Eastern Standard Time',
+  },
+  end: {
+    dateTime: '2026-03-30T11:30:00.0000000',
+    timeZone: 'Eastern Standard Time',
+  },
   showAs: 'busy',
   responseStatus: { response: 'organizer' },
 };
@@ -96,8 +138,14 @@ const seriesMaster: MsftGraphEvent = {
 const ianaTimezoneEvent: MsftGraphEvent = {
   ...normalMeeting,
   id: 'msft_009',
-  start: { dateTime: '2026-03-30T09:00:00.0000000', timeZone: 'America/New_York' },
-  end: { dateTime: '2026-03-30T10:00:00.0000000', timeZone: 'America/New_York' },
+  start: {
+    dateTime: '2026-03-30T09:00:00.0000000',
+    timeZone: 'America/New_York',
+  },
+  end: {
+    dateTime: '2026-03-30T10:00:00.0000000',
+    timeZone: 'America/New_York',
+  },
 };
 
 describe('isBlockingMsftEvent', () => {
@@ -122,7 +170,9 @@ describe('isBlockingMsftEvent', () => {
   });
 
   it('includes working elsewhere events when requested', () => {
-    expect(isBlockingMsftEvent(workingElsewhere, { includeFree: true })).toBe(true);
+    expect(isBlockingMsftEvent(workingElsewhere, { includeFree: true })).toBe(
+      true,
+    );
   });
 
   it('includes tentative events by default', () => {
@@ -130,7 +180,9 @@ describe('isBlockingMsftEvent', () => {
   });
 
   it('excludes tentative events when includeTentative is false', () => {
-    expect(isBlockingMsftEvent(tentativeEvent, { includeTentative: false })).toBe(false);
+    expect(
+      isBlockingMsftEvent(tentativeEvent, { includeTentative: false }),
+    ).toBe(false);
   });
 
   it('returns false for declined events', () => {
@@ -146,7 +198,9 @@ describe('isBlockingMsftEvent', () => {
   });
 
   it('treats missing showAs conservatively as blocking', () => {
-    expect(isBlockingMsftEvent({ ...normalMeeting, showAs: undefined })).toBe(true);
+    expect(isBlockingMsftEvent({ ...normalMeeting, showAs: undefined })).toBe(
+      true,
+    );
   });
 });
 
@@ -184,7 +238,10 @@ describe('msftEventToDateRange', () => {
   });
 
   it('uses the default fallback label when subject is missing', () => {
-    const range = msftEventToDateRange({ ...normalMeeting, subject: undefined });
+    const range = msftEventToDateRange({
+      ...normalMeeting,
+      subject: undefined,
+    });
 
     expect(range.label).toBe('(busy)');
   });

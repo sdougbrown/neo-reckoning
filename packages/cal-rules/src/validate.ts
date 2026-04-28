@@ -24,7 +24,9 @@ function assignCandidateValue<K extends keyof DateRange>(
   candidate[key] = value as DateRange[K];
 }
 
-function sanitizeCandidate(record: Record<string, unknown>): SanitizedRangeCandidate {
+function sanitizeCandidate(
+  record: Record<string, unknown>,
+): SanitizedRangeCandidate {
   const sanitized: SanitizedRangeCandidate = {};
 
   for (const key of RANGE_KEYS) {

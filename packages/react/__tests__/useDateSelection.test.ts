@@ -51,7 +51,11 @@ describe('useDateSelection', () => {
     const onSelectionChange = vi.fn();
     const { result } = renderHook(() =>
       useDateSelection({
-        selection: { start: '2026-03-10', end: '2026-03-12', preview: '2026-03-11' },
+        selection: {
+          start: '2026-03-10',
+          end: '2026-03-12',
+          preview: '2026-03-11',
+        },
         onSelectionChange,
       }),
     );
