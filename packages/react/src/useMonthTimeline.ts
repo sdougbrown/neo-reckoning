@@ -14,30 +14,27 @@ export interface UseMonthTimelineResult extends MonthTimelineModel {}
 export function useMonthTimeline(config: UseMonthTimelineConfig): UseMonthTimelineResult {
   const { startDate, ranges, numberOfMonths, endDate, locale, userTimezone } = config;
 
-  return useMemo(
-    () => {
-      const baseConfig = {
-        startDate,
-        ranges,
-        ...(locale !== undefined ? { locale } : {}),
-        ...(userTimezone !== undefined ? { userTimezone } : {}),
-      };
+  return useMemo(() => {
+    const baseConfig = {
+      startDate,
+      ranges,
+      ...(locale !== undefined ? { locale } : {}),
+      ...(userTimezone !== undefined ? { userTimezone } : {}),
+    };
 
-      return buildMonthTimelineModel(
-        endDate !== undefined
+    return buildMonthTimelineModel(
+      endDate !== undefined
+        ? {
+            ...baseConfig,
+            endDate,
+            ...(numberOfMonths !== undefined ? { numberOfMonths } : {}),
+          }
+        : numberOfMonths !== undefined
           ? {
               ...baseConfig,
-              endDate,
-              ...(numberOfMonths !== undefined ? { numberOfMonths } : {}),
+              numberOfMonths,
             }
-          : numberOfMonths !== undefined
-            ? {
-                ...baseConfig,
-                numberOfMonths,
-              }
-            : config,
-      );
-    },
-    [startDate, ranges, numberOfMonths, endDate, locale, userTimezone],
-  );
+          : config,
+    );
+  }, [startDate, ranges, numberOfMonths, endDate, locale, userTimezone]);
 }
