@@ -186,6 +186,20 @@ describe('MonthTimeline', () => {
       });
     });
 
+    it('does not mark clippedStart when fromDate equals the window start', () => {
+      const timeline = new MonthTimeline({
+        startDate: '2026-03-01',
+        numberOfMonths: 3,
+        ranges: [makeRange({ id: 'aligned-start', fromDate: '2026-03-01', toDate: '2026-04-15' })],
+      });
+
+      expect(timeline.spans[0]).toMatchObject({
+        rangeId: 'aligned-start',
+        startMonthIndex: 0,
+        clippedStart: false,
+      });
+    });
+
     it('marks clippedEnd for a range ending after the window', () => {
       const timeline = new MonthTimeline({
         startDate: '2026-03-01',
@@ -197,6 +211,20 @@ describe('MonthTimeline', () => {
         rangeId: 'late',
         endMonthIndex: 2,
         clippedEnd: true,
+      });
+    });
+
+    it('does not mark clippedEnd when toDate equals the window end', () => {
+      const timeline = new MonthTimeline({
+        startDate: '2026-03-01',
+        numberOfMonths: 3,
+        ranges: [makeRange({ id: 'aligned-end', fromDate: '2026-04-01', toDate: '2026-05-31' })],
+      });
+
+      expect(timeline.spans[0]).toMatchObject({
+        rangeId: 'aligned-end',
+        endMonthIndex: 2,
+        clippedEnd: false,
       });
     });
 
@@ -298,7 +326,10 @@ describe('MonthTimeline', () => {
         ],
       });
 
-      expect(new Set(timeline.spans.map((span) => span.lane))).toEqual(new Set([0, 1]));
+      expect(timeline.spans.map((span) => [span.rangeId, span.lane])).toEqual([
+        ['a', 0],
+        ['b', 1],
+      ]);
     });
 
     it('reuses lane 0 for ranges that touch at a month boundary but do not overlap by date', () => {
@@ -342,8 +373,7 @@ describe('MonthTimeline', () => {
       const position = timeline.getDatePosition('2026-04-16');
 
       expect(position?.monthIndex).toBe(1);
-      expect(position?.fraction).toBeGreaterThan(0);
-      expect(position?.fraction).toBeLessThan(1);
+      expect(position?.fraction).toBe(15 / 30);
     });
 
     it('returns zero fraction for the first day of a month', () => {
@@ -447,6 +477,10 @@ describe('MonthTimeline', () => {
         ['t1', 't2', 't3', 'postBirth'].includes(span.rangeId),
       );
       expect(continuousSpans.every((span) => span.lane === 0)).toBe(true);
+
+      expect(timeline.spans.find((span) => span.rangeId === 'firstUltrasound')).toMatchObject({
+        displayType: 'dot',
+      });
     });
 
     it('keeps year-boundary columns correct', () => {
@@ -459,8 +493,7 @@ describe('MonthTimeline', () => {
       const firstUltrasound = timeline.getDatePosition('2026-03-05');
 
       expect(firstUltrasound?.monthIndex).toBe(2);
-      expect(firstUltrasound?.fraction).toBeGreaterThan(0);
-      expect(firstUltrasound?.fraction).toBeLessThan(1);
+      expect(firstUltrasound?.fraction).toBe(4 / 31);
       expect(timeline.getDatePosition('2026-06-18')?.monthIndex).toBe(5);
       expect(timeline.getDatePosition('2026-09-10')?.monthIndex).toBe(8);
       expect(timeline.getDatePosition('2026-10-22')?.monthIndex).toBe(9);

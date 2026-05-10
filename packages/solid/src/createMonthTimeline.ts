@@ -6,7 +6,7 @@ import { toAccessor, type MaybeAccessor } from './utils.js';
 export interface CreateMonthTimelineResult {
   months: Accessor<MonthTimelineModel['months']>;
   spans: Accessor<MonthTimelineModel['spans']>;
-  getDatePosition: Accessor<MonthTimelineModel['getDatePosition']>;
+  getDatePosition: MonthTimelineModel['getDatePosition'];
 }
 
 export function createMonthTimeline(
@@ -18,6 +18,6 @@ export function createMonthTimeline(
   return {
     months: () => model().months,
     spans: () => model().spans,
-    getDatePosition: () => model().getDatePosition,
+    getDatePosition: (date: string) => model().getDatePosition(date),
   };
 }

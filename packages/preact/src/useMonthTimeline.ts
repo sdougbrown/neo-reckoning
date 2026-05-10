@@ -3,6 +3,7 @@ import { buildMonthTimelineModel } from '@daywatch/cal-models';
 import type { MonthTimelineModel, MonthTimelineModelConfig } from '@daywatch/cal-models';
 
 export type UseMonthTimelineConfig = MonthTimelineModelConfig;
+export type UseMonthTimelineResult = MonthTimelineModel;
 
 /**
  * Computes month-column timeline layout data.
@@ -10,11 +11,31 @@ export type UseMonthTimelineConfig = MonthTimelineModelConfig;
  * @note Stabilize the `ranges` array with `useMemo` or a module-level constant.
  * Inline array literals cause the timeline to recompute on every render.
  */
-export function useMonthTimeline(config: UseMonthTimelineConfig): MonthTimelineModel {
+export function useMonthTimeline(config: UseMonthTimelineConfig): UseMonthTimelineResult {
   const { startDate, ranges, numberOfMonths, endDate, locale, userTimezone } = config;
 
   return useMemo(
-    () => buildMonthTimelineModel(config),
+    () => {
+      const baseConfig = {
+        startDate,
+        ranges,
+        ...(locale !== undefined ? { locale } : {}),
+        ...(userTimezone !== undefined ? { userTimezone } : {}),
+      };
+
+      return buildMonthTimelineModel(
+        endDate !== undefined
+          ? {
+              ...baseConfig,
+              endDate,
+              ...(numberOfMonths !== undefined ? { numberOfMonths } : {}),
+            }
+          : {
+              ...baseConfig,
+              numberOfMonths: numberOfMonths!,
+            },
+      );
+    },
     [startDate, ranges, numberOfMonths, endDate, locale, userTimezone],
   );
 }
