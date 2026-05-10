@@ -26,21 +26,19 @@ export class MonthTimeline {
   months: TimelineMonth[];
   spans: MonthSpanInfo[];
 
-  private ranges: DateRange[];
-  private evaluator: RangeEvaluator;
-
   constructor(config: MonthTimelineConfig) {
-    this.ranges = config.ranges;
-    this.evaluator = new RangeEvaluator(config.userTimezone);
-
     const resolvedMonths = this.resolveWindow(config);
+    const evaluator = new RangeEvaluator(config.userTimezone);
+
     this.months = this.generateMonths(resolvedMonths, config.locale);
-    this.spans = this.computeMonthSpans();
+    this.spans = this.computeMonthSpans(config.ranges, evaluator);
   }
 
   /**
    * Returns the column index and fractional offset (0–1) for a specific date
    * within the timeline. Returns null if the date falls outside the window.
+   *
+   * The fraction is a start-of-day offset: first day → 0.0, last day → (N-1)/N.
    */
   getDatePosition(date: string): { monthIndex: number; fraction: number } | null {
     const month = this.months.find((m) => date >= m.startDate && date <= m.endDate);
@@ -51,6 +49,7 @@ export class MonthTimeline {
 
     return {
       monthIndex: month.index,
+      // Start-of-day offset: first day is 0, last day is (total - 1) / total.
       fraction: (day - 1) / total,
     };
   }
@@ -97,6 +96,9 @@ export class MonthTimeline {
   }
 
   private generateMonths(window: ResolvedMonth[], locale?: string): TimelineMonth[] {
+    const shortFormatter = new Intl.DateTimeFormat(locale, { month: 'short' });
+    const longFormatter = new Intl.DateTimeFormat(locale, { month: 'long' });
+
     return window.map(({ year, month }, index) => {
       const firstDay = new Date(year, month, 1);
       const lastDay = daysInMonth(year, month);
@@ -105,46 +107,47 @@ export class MonthTimeline {
         index,
         month,
         year,
-        label: new Intl.DateTimeFormat(locale, { month: 'short' }).format(firstDay),
-        fullLabel: new Intl.DateTimeFormat(locale, { month: 'long' }).format(firstDay),
+        label: shortFormatter.format(firstDay),
+        fullLabel: longFormatter.format(firstDay),
         startDate: formatDate(firstDay),
         endDate: formatDate(new Date(year, month, lastDay)),
       };
     });
   }
 
-  private computeMonthSpans(): MonthSpanInfo[] {
-    if (this.months.length === 0 || this.ranges.length === 0) return [];
+  private computeMonthSpans(ranges: DateRange[], evaluator: RangeEvaluator): MonthSpanInfo[] {
+    if (this.months.length === 0 || ranges.length === 0) return [];
 
     const windowStart = this.months[0].startDate;
     const windowEnd = this.months[this.months.length - 1].endDate;
     const rawSpans: RawMonthSpan[] = [];
+    const rangesById = new Map(ranges.map((range) => [range.id, range]));
+    const resolved = evaluator.computeSpans(
+      ranges,
+      buildDate(windowStart, null),
+      buildDate(windowEnd, null),
+    );
 
-    for (const range of this.ranges) {
-      const resolved = this.evaluator.computeSpans(
-        [range],
-        buildDate(windowStart, null),
-        buildDate(windowEnd, null),
-      );
+    for (const span of resolved) {
+      const sourceRange = rangesById.get(span.rangeId);
+      if (!sourceRange) continue;
 
-      for (const span of resolved) {
-        const startMonthIndex = this.dateToMonthIndex(span.startDate);
-        const endMonthIndex = this.dateToMonthIndex(span.endDate);
+      const startMonthIndex = this.dateToMonthIndex(span.startDate);
+      const endMonthIndex = this.dateToMonthIndex(span.endDate);
 
-        if (startMonthIndex === null || endMonthIndex === null) continue;
+      if (startMonthIndex === null || endMonthIndex === null) continue;
 
-        rawSpans.push({
-          rangeId: span.rangeId,
-          label: span.label,
-          ...(span.displayType !== undefined ? { displayType: span.displayType } : {}),
-          startDate: span.startDate,
-          endDate: span.endDate,
-          startMonthIndex,
-          endMonthIndex,
-          clippedStart: range.fromDate ? compareDates(range.fromDate, windowStart) < 0 : false,
-          clippedEnd: range.toDate ? compareDates(range.toDate, windowEnd) > 0 : false,
-        });
-      }
+      rawSpans.push({
+        rangeId: span.rangeId,
+        label: span.label,
+        ...(span.displayType !== undefined ? { displayType: span.displayType } : {}),
+        startDate: span.startDate,
+        endDate: span.endDate,
+        startMonthIndex,
+        endMonthIndex,
+        clippedStart: this.isClippedStart(sourceRange, span.startDate, windowStart),
+        clippedEnd: this.isClippedEnd(sourceRange, span.endDate, windowEnd),
+      });
     }
 
     if (rawSpans.length === 0) return [];
@@ -182,5 +185,33 @@ export class MonthTimeline {
   private dateToMonthIndex(date: string): number | null {
     const { year, month } = parseDate(date);
     return this.months.find((m) => m.year === year && m.month === month)?.index ?? null;
+  }
+
+  private isClippedStart(range: DateRange, spanStart: string, windowStart: string): boolean {
+    if (compareDates(spanStart, windowStart) !== 0) return false;
+
+    if (range.fromDate) {
+      return compareDates(range.fromDate, windowStart) < 0;
+    }
+
+    if (range.dates) {
+      return range.dates.some((date) => compareDates(date, windowStart) < 0);
+    }
+
+    return true;
+  }
+
+  private isClippedEnd(range: DateRange, spanEnd: string, windowEnd: string): boolean {
+    if (compareDates(spanEnd, windowEnd) !== 0) return false;
+
+    if (range.toDate) {
+      return compareDates(range.toDate, windowEnd) > 0;
+    }
+
+    if (range.dates) {
+      return range.dates.some((date) => compareDates(date, windowEnd) > 0);
+    }
+
+    return true;
   }
 }

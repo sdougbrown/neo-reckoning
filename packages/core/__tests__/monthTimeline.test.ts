@@ -200,6 +200,58 @@ describe('MonthTimeline', () => {
       });
     });
 
+    it('marks open-ended spans clipped at both window boundaries', () => {
+      const timeline = new MonthTimeline({
+        startDate: '2026-03-01',
+        numberOfMonths: 1,
+        ranges: [
+          {
+            id: 'open-ended',
+            label: 'Open ended',
+          },
+        ],
+      });
+
+      expect(timeline.spans[0]).toMatchObject({
+        rangeId: 'open-ended',
+        startMonthIndex: 0,
+        endMonthIndex: 0,
+        clippedStart: true,
+        clippedEnd: true,
+      });
+    });
+
+    it('marks explicit dates clipped only when dates exist outside the window', () => {
+      const timeline = new MonthTimeline({
+        startDate: '2026-03-01',
+        numberOfMonths: 1,
+        ranges: [
+          {
+            id: 'finite-dates',
+            label: 'Finite dates',
+            dates: ['2026-02-28', '2026-03-01', '2026-03-31', '2026-04-01'],
+          },
+        ],
+      });
+
+      expect(timeline.spans).toEqual([
+        expect.objectContaining({
+          rangeId: 'finite-dates',
+          startMonthIndex: 0,
+          endMonthIndex: 0,
+          clippedStart: true,
+          clippedEnd: false,
+        }),
+        expect.objectContaining({
+          rangeId: 'finite-dates',
+          startMonthIndex: 0,
+          endMonthIndex: 0,
+          clippedStart: false,
+          clippedEnd: true,
+        }),
+      ]);
+    });
+
     it('projects a single-month range', () => {
       const timeline = new MonthTimeline({
         startDate: '2026-03-01',
@@ -248,6 +300,35 @@ describe('MonthTimeline', () => {
 
       expect(new Set(timeline.spans.map((span) => span.lane))).toEqual(new Set([0, 1]));
     });
+
+    it('reuses lane 0 for ranges that touch at a month boundary but do not overlap by date', () => {
+      const timeline = new MonthTimeline({
+        startDate: '2026-03-01',
+        numberOfMonths: 2,
+        ranges: [
+          makeRange({ id: 'march', fromDate: '2026-03-01', toDate: '2026-03-31' }),
+          makeRange({ id: 'april', fromDate: '2026-04-01', toDate: '2026-04-30' }),
+        ],
+      });
+
+      expect(timeline.spans.map((span) => span.lane)).toEqual([0, 0]);
+    });
+
+    it('assigns lanes greedily across a 3-way overlap', () => {
+      const timeline = new MonthTimeline({
+        startDate: '2026-03-01',
+        numberOfMonths: 4,
+        ranges: [
+          makeRange({ id: 'a', fromDate: '2026-03-01', toDate: '2026-03-10' }),
+          makeRange({ id: 'b', fromDate: '2026-03-11', toDate: '2026-03-20' }),
+          makeRange({ id: 'c', fromDate: '2026-03-05', toDate: '2026-03-15' }),
+        ],
+      });
+
+      expect(timeline.spans.find((span) => span.rangeId === 'a')?.lane).toBe(0);
+      expect(timeline.spans.find((span) => span.rangeId === 'b')?.lane).toBe(0);
+      expect(timeline.spans.find((span) => span.rangeId === 'c')?.lane).toBe(1);
+    });
   });
 
   describe('getDatePosition', () => {
@@ -273,6 +354,26 @@ describe('MonthTimeline', () => {
       expect(timeline.getDatePosition('2026-04-30')).toEqual({
         monthIndex: 1,
         fraction: 29 / 30,
+      });
+    });
+
+    it('uses start-of-day fractions for a 31-day month', () => {
+      expect(timeline.getDatePosition('2026-03-31')).toEqual({
+        monthIndex: 0,
+        fraction: 30 / 31,
+      });
+    });
+
+    it('uses leap-year February day count for fractions', () => {
+      const leapTimeline = new MonthTimeline({
+        startDate: '2024-02-01',
+        numberOfMonths: 1,
+        ranges: [],
+      });
+
+      expect(leapTimeline.getDatePosition('2024-02-29')).toEqual({
+        monthIndex: 0,
+        fraction: 28 / 29,
       });
     });
 

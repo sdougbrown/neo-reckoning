@@ -354,27 +354,43 @@ export interface YearDay {
   rangeIds: string[];
 }
 
-/**
- * Configuration for MonthTimeline.
- * Accepts numberOfMonths, endDate, or both (endDate takes precedence).
- */
-export interface MonthTimelineConfig {
+interface MonthTimelineBaseConfig {
   /** Window start — normalized internally to the first of the month */
   startDate: string;
   /** DateRanges to lay out across the timeline */
   ranges: DateRange[];
-  /** Number of month columns to show. Required if endDate is not provided. */
-  numberOfMonths?: number;
-  /**
-   * Inclusive end of the window — normalized internally to the last day of this month.
-   * Required if numberOfMonths is not provided.
-   */
-  endDate?: string;
   /** BCP 47 locale for Intl month label formatting. Default: runtime default */
   locale?: string;
   /** IANA timezone for range evaluation */
   userTimezone?: string;
 }
+
+/**
+ * Configuration for MonthTimeline.
+ * Accepts numberOfMonths, endDate, or both. When provided alongside
+ * numberOfMonths, endDate takes precedence.
+ */
+export type MonthTimelineConfig = MonthTimelineBaseConfig &
+  (
+    | {
+        /** Number of month columns to show. */
+        numberOfMonths: number;
+        /**
+         * Inclusive end of the window — normalized internally to the last day of this month.
+         * When provided alongside numberOfMonths, endDate takes precedence.
+         */
+        endDate?: string;
+      }
+    | {
+        /**
+         * Inclusive end of the window — normalized internally to the last day of this month.
+         * When provided alongside numberOfMonths, endDate takes precedence.
+         */
+        endDate: string;
+        /** Number of month columns to show. Ignored when endDate is provided. */
+        numberOfMonths?: number;
+      }
+  );
 
 /**
  * A single month column in a MonthTimeline.
@@ -411,7 +427,11 @@ export interface MonthSpanInfo {
   clippedStart: boolean;
   /** True if the range's actual endDate extends past the timeline window */
   clippedEnd: boolean;
-  /** Lane assignment for stacking overlapping spans (0-based, greedy) */
+  /**
+   * Lane assignment (0-based, greedy) for stacking spans that overlap by date.
+   * Spans sharing a month column but not overlapping by actual date share a lane;
+   * renderers must use getDatePosition to clip span start/end within a column.
+   */
   lane: number;
 }
 
