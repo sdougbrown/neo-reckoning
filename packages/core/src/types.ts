@@ -423,9 +423,9 @@ export interface MonthSpanInfo {
   startMonthIndex: number;
   /** Column index where this span ends, inclusive */
   endMonthIndex: number;
-  /** True if the range's actual startDate precedes the timeline window */
+  /** True if this span starts at the first column because the source range extends earlier */
   clippedStart: boolean;
-  /** True if the range's actual endDate extends past the timeline window */
+  /** True if this span ends at the last column because the source range extends later */
   clippedEnd: boolean;
   /**
    * Lane assignment (0-based, greedy) for stacking spans that overlap by date.
