@@ -729,13 +729,8 @@ export class RangeEvaluator {
   }
 
   private isDateInBounds(dateStr: string, range: DateRange): boolean {
-    if (range.fixedBetween) {
-      if (range.fromDate && compareDates(dateStr, range.fromDate) < 0) return false;
-      if (range.toDate && compareDates(dateStr, range.toDate) > 0) return false;
-    } else {
-      if (range.fromDate && compareDates(dateStr, range.fromDate) < 0) return false;
-      if (range.toDate && compareDates(dateStr, range.toDate) > 0) return false;
-    }
+    if (range.fromDate && compareDates(dateStr, range.fromDate) < 0) return false;
+    if (range.toDate && compareDates(dateStr, range.toDate) > 0) return false;
     return true;
   }
 

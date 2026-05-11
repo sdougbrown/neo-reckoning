@@ -354,6 +354,87 @@ export interface YearDay {
   rangeIds: string[];
 }
 
+interface MonthTimelineBaseConfig {
+  /** Window start — normalized internally to the first of the month */
+  startDate: string;
+  /** DateRanges to lay out across the timeline */
+  ranges: DateRange[];
+  /** BCP 47 locale for Intl month label formatting. Default: runtime default */
+  locale?: string;
+  /** IANA timezone for range evaluation */
+  userTimezone?: string;
+}
+
+/**
+ * Configuration for MonthTimeline.
+ * Accepts numberOfMonths, endDate, or both. When provided alongside
+ * numberOfMonths, endDate takes precedence.
+ */
+export type MonthTimelineConfig = MonthTimelineBaseConfig &
+  (
+    | {
+        /** Number of month columns to show. */
+        numberOfMonths: number;
+        /**
+         * Inclusive end of the window — normalized internally to the last day of this month.
+         * When provided alongside numberOfMonths, endDate takes precedence.
+         */
+        endDate?: string;
+      }
+    | {
+        /**
+         * Inclusive end of the window — normalized internally to the last day of this month.
+         * When provided alongside numberOfMonths, endDate takes precedence.
+         */
+        endDate: string;
+        /** Number of month columns to show. Ignored when endDate is provided. */
+        numberOfMonths?: number;
+      }
+  );
+
+/**
+ * A single month column in a MonthTimeline.
+ */
+export interface TimelineMonth {
+  /** 0-based column index within the timeline */
+  index: number;
+  /** Month number, 0-11 */
+  month: number;
+  /** Full year */
+  year: number;
+  /** Short label for compact layouts, e.g. "Jan" */
+  label: string;
+  /** Full label, e.g. "January" */
+  fullLabel: string;
+  /** First day of the month, YYYY-MM-DD */
+  startDate: string;
+  /** Last day of the month, YYYY-MM-DD */
+  endDate: string;
+}
+
+/**
+ * A span positioned at month-column granularity, with lane assignment.
+ */
+export interface MonthSpanInfo {
+  rangeId: string;
+  label: string;
+  displayType?: string;
+  /** Column index where this span begins */
+  startMonthIndex: number;
+  /** Column index where this span ends, inclusive */
+  endMonthIndex: number;
+  /** True if this span starts at the first column because the source range extends earlier */
+  clippedStart: boolean;
+  /** True if this span ends at the last column because the source range extends later */
+  clippedEnd: boolean;
+  /**
+   * Lane assignment (0-based, greedy) for stacking spans that overlap by date.
+   * Spans sharing a month column but not overlapping by actual date share a lane;
+   * renderers must use getDatePosition to clip span start/end within a column.
+   */
+  lane: number;
+}
+
 /**
  * Score summarising the quality of a schedule across a date window.
  */
