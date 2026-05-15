@@ -1,4 +1,4 @@
-import rrulePkg from 'rrule';
+import * as rrulePkg from 'rrule';
 
 import { compareDates, pad } from './utils.js';
 
