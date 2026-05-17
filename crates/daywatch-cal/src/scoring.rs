@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
 
 use crate::evaluator::{RangeEvaluator, TimedEntry};
-use crate::time::{date_range, format_date, time_to_minutes};
+use crate::time::{date_range, format_date, parse_hhmm};
 use crate::types::{DateRange, ScheduleScore, ScoreScheduleOptions};
 
 fn merge_intervals(
@@ -38,11 +38,7 @@ fn merge_intervals(
     merged
 }
 
-fn compute_gaps(
-    merged: &[(u32, u32)],
-    day_start_min: u32,
-    day_end_min: u32,
-) -> Vec<(u32, u32)> {
+fn compute_gaps(merged: &[(u32, u32)], day_start_min: u32, day_end_min: u32) -> Vec<(u32, u32)> {
     let mut gaps: Vec<(u32, u32)> = Vec::new();
     let mut cursor = day_start_min;
     for &(s, e) in merged {
@@ -67,8 +63,14 @@ pub fn score_schedule(
     let focus_block_minutes = options.focus_block_minutes.unwrap_or(60);
     let day_start = options.day_start.as_deref().unwrap_or("09:00");
     let day_end = options.day_end.as_deref().unwrap_or("17:00");
-    let day_start_min = time_to_minutes(day_start);
-    let day_end_min = time_to_minutes(day_end);
+    let day_start_min = match parse_hhmm(day_start) {
+        Some((hour, minute)) => hour * 60 + minute,
+        None => return ScheduleScore::default(),
+    };
+    let day_end_min = match parse_hhmm(day_end) {
+        Some((hour, minute)) => hour * 60 + minute,
+        None => return ScheduleScore::default(),
+    };
 
     let days = date_range(from, to);
 
@@ -152,8 +154,8 @@ pub fn score_schedule(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::{DaySelector, TimeSelector};
     use crate::time::parse_date;
+    use crate::types::{DaySelector, TimeSelector};
     use chrono::NaiveDate;
 
     fn make_range(
@@ -166,6 +168,7 @@ mod tests {
             id: id.to_string(),
             label: label.to_string(),
             title: None,
+            display_type: None,
             day_selector,
             time_selector,
             timezone: None,
@@ -283,13 +286,7 @@ mod tests {
         );
         let from = parse_date("2026-03-12").unwrap();
         let to = parse_date("2026-03-12").unwrap();
-        let score = score_schedule(
-            &ev,
-            &[r1, r2],
-            from,
-            to,
-            ScoreScheduleOptions::default(),
-        );
+        let score = score_schedule(&ev, &[r1, r2], from, to, ScoreScheduleOptions::default());
         assert_eq!(score.conflicts, 1);
         // occupied: 10-13 merged → 3h → 5h free
         assert_eq!(score.free_minutes, 5 * 60);

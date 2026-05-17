@@ -6,6 +6,11 @@ on:
       - 'packages/core/src/**'
       - 'crates/daywatch-cal/src/**'
       - '.github/workflows/parity.yml'
+  pull_request:
+    paths:
+      - 'packages/core/src/**'
+      - 'crates/daywatch-cal/src/**'
+      - '.github/workflows/parity.yml'
 
 jobs:
   js-tests:
@@ -19,7 +24,7 @@ jobs:
           node-version: '20'
           cache: yarn
       - run: yarn install --immutable
-      - run: yarn workspace @daywatch/core test
+      - run: yarn workspace @daywatch/cal test
         env:
           NODE_OPTIONS: '--experimental-vm-modules'
 

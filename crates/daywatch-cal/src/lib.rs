@@ -1,7 +1,7 @@
-mod time;
-mod types;
 mod evaluator;
 pub mod scoring;
+mod time;
+mod types;
 
 pub use evaluator::RangeEvaluator;
 pub use scoring::score_schedule;

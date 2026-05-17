@@ -67,6 +67,8 @@ pub struct DateRange {
     pub label: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
+    #[serde(rename = "displayType", skip_serializing_if = "Option::is_none")]
+    pub display_type: Option<String>,
 
     #[serde(flatten)]
     pub day_selector: DaySelector,
@@ -112,6 +114,11 @@ impl<'de> Deserialize<'de> for DateRange {
 
         let title: Option<String> = map
             .get("title")
+            .and_then(non_null)
+            .map(|v| serde_json::from_value(v).map_err(Error::custom))
+            .transpose()?;
+        let display_type: Option<String> = map
+            .get("displayType")
             .and_then(non_null)
             .map(|v| serde_json::from_value(v).map_err(Error::custom))
             .transpose()?;
@@ -274,14 +281,13 @@ impl<'de> Deserialize<'de> for DateRange {
             .and_then(non_null)
             .map(|v| serde_json::from_value(v).map_err(Error::custom))
             .transpose()?;
-        let metadata: Option<serde_json::Value> = map
-            .get("metadata")
-            .and_then(non_null);
+        let metadata: Option<serde_json::Value> = map.get("metadata").and_then(non_null);
 
         Ok(DateRange {
             id,
             label,
             title,
+            display_type,
             day_selector,
             time_selector,
             timezone,
@@ -292,6 +298,7 @@ impl<'de> Deserialize<'de> for DateRange {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Occurrence {
     pub date: String,
     pub start_time: Option<String>,
@@ -303,6 +310,7 @@ pub struct Occurrence {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TimeSlot {
     pub start_time: String,
     pub end_time: Option<String>,
@@ -312,6 +320,7 @@ pub struct TimeSlot {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct FreeSlot {
     pub date: String,
     pub start_time: String,
@@ -326,6 +335,7 @@ pub struct RangeRef {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Conflict {
     pub range_a: RangeRef,
     pub range_b: RangeRef,
@@ -334,7 +344,8 @@ pub struct Conflict {
     pub overlap_end: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ScheduleScore {
     pub conflicts: u32,
     pub free_minutes: u32,
@@ -344,6 +355,7 @@ pub struct ScheduleScore {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SpanInfo {
     pub range_id: String,
     pub label: String,
@@ -357,6 +369,7 @@ pub struct SpanInfo {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct FindFreeSlotsOptions {
     pub min_duration: Option<u32>,
     pub day_start: Option<String>,
@@ -364,6 +377,7 @@ pub struct FindFreeSlotsOptions {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ScoreScheduleOptions {
     pub focus_block_minutes: Option<u32>,
     pub day_start: Option<String>,
@@ -380,6 +394,7 @@ mod tests {
             id: "1".to_string(),
             label: "Test Explicit".to_string(),
             title: Some("Explicit Title".to_string()),
+            display_type: None,
             day_selector: DaySelector::Explicit {
                 dates: vec!["2026-03-21".to_string(), "2026-03-25".to_string()],
                 except_dates: None,
@@ -401,6 +416,7 @@ mod tests {
             id: "2".to_string(),
             label: "Test Recurrence".to_string(),
             title: None,
+            display_type: None,
             day_selector: DaySelector::Recurrence {
                 every_weekday: Some(vec![1, 3, 5]),
                 every_date: None,
@@ -426,6 +442,7 @@ mod tests {
             id: "3".to_string(),
             label: "Test Range Bounded".to_string(),
             title: None,
+            display_type: None,
             day_selector: DaySelector::Range {
                 from_date: Some("2026-03-01".to_string()),
                 to_date: Some("2026-03-31".to_string()),
@@ -449,6 +466,7 @@ mod tests {
             id: "4".to_string(),
             label: "Test Range Open".to_string(),
             title: None,
+            display_type: None,
             day_selector: DaySelector::Range {
                 from_date: Some("2026-03-01".to_string()),
                 to_date: None,
@@ -472,6 +490,7 @@ mod tests {
             id: "5".to_string(),
             label: "Test Hours".to_string(),
             title: None,
+            display_type: None,
             day_selector: DaySelector::Explicit {
                 dates: vec!["2026-03-21".to_string()],
                 except_dates: None,
@@ -496,6 +515,7 @@ mod tests {
             id: "6".to_string(),
             label: "Test Window".to_string(),
             title: None,
+            display_type: None,
             day_selector: DaySelector::Explicit {
                 dates: vec!["2026-03-21".to_string()],
                 except_dates: None,
@@ -522,6 +542,7 @@ mod tests {
             id: "7".to_string(),
             label: "Test Combined".to_string(),
             title: None,
+            display_type: None,
             day_selector: DaySelector::Recurrence {
                 every_weekday: Some(vec![1, 3, 5]),
                 every_date: None,
@@ -552,6 +573,7 @@ mod tests {
             id: "8".to_string(),
             label: "Test Timezone".to_string(),
             title: None,
+            display_type: None,
             day_selector: DaySelector::Explicit {
                 dates: vec!["2026-03-21".to_string()],
                 except_dates: None,
@@ -573,13 +595,11 @@ mod tests {
             id: "9".to_string(),
             label: "Test Exclusions".to_string(),
             title: None,
+            display_type: None,
             day_selector: DaySelector::Explicit {
                 dates: vec!["2026-03-21".to_string(), "2026-03-22".to_string()],
                 except_dates: Some(vec!["2026-03-22".to_string()]),
-                except_between: Some(vec![(
-                    "2026-03-23".to_string(),
-                    "2026-03-25".to_string(),
-                )]),
+                except_between: Some(vec![("2026-03-23".to_string(), "2026-03-25".to_string())]),
             },
             time_selector: None,
             timezone: None,
@@ -603,7 +623,10 @@ mod tests {
         assert_eq!(dr.label, "Explicit");
         assert!(matches!(dr.day_selector, DaySelector::Explicit { .. }));
         if let DaySelector::Explicit { dates, .. } = &dr.day_selector {
-            assert_eq!(dates, &vec!["2026-03-21".to_string(), "2026-03-25".to_string()]);
+            assert_eq!(
+                dates,
+                &vec!["2026-03-21".to_string(), "2026-03-25".to_string()]
+            );
         }
     }
 
@@ -672,10 +695,7 @@ mod tests {
         assert_eq!(dr.id, "4");
         assert_eq!(dr.label, "Hours");
         assert!(matches!(dr.day_selector, DaySelector::Explicit { .. }));
-        assert!(matches!(
-            dr.time_selector,
-            Some(TimeSelector::Hours { .. })
-        ));
+        assert!(matches!(dr.time_selector, Some(TimeSelector::Hours { .. })));
         if let Some(TimeSelector::Hours {
             every_hour,
             duration,
@@ -742,7 +762,8 @@ mod tests {
 
     #[test]
     fn deser_recurrence_takes_precedence_over_range() {
-        let json = r#"{"id": "1", "label": "test", "everyWeekday": [1, 3, 5], "fromDate": "2026-01-01"}"#;
+        let json =
+            r#"{"id": "1", "label": "test", "everyWeekday": [1, 3, 5], "fromDate": "2026-01-01"}"#;
         let dr: DateRange = serde_json::from_str(json).unwrap();
         assert!(matches!(dr.day_selector, DaySelector::Recurrence { .. }));
     }
@@ -752,5 +773,29 @@ mod tests {
         let json = r#"{"id": "1", "label": "test", "dates": ["2026-01-01"], "timezone": null}"#;
         let dr: DateRange = serde_json::from_str(json).unwrap();
         assert_eq!(dr.timezone, None);
+    }
+
+    #[test]
+    fn serializes_public_outputs_as_camel_case_json() {
+        let slot = TimeSlot {
+            start_time: "09:00".to_string(),
+            end_time: Some("09:30".to_string()),
+            duration: Some(30),
+            range_id: "r1".to_string(),
+            label: "Focus".to_string(),
+        };
+        let json = serde_json::to_value(slot).unwrap();
+        assert_eq!(json["startTime"], "09:00");
+        assert_eq!(json["endTime"], "09:30");
+        assert_eq!(json["rangeId"], "r1");
+        assert!(json.get("start_time").is_none());
+    }
+
+    #[test]
+    fn deserializes_display_type_from_json() {
+        let json =
+            r#"{"id": "1", "label": "test", "dates": ["2026-03-21"], "displayType": "chip"}"#;
+        let dr: DateRange = serde_json::from_str(json).unwrap();
+        assert_eq!(dr.display_type.as_deref(), Some("chip"));
     }
 }

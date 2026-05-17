@@ -1,10 +1,13 @@
-use daywatch_cal::{DateRange, FindFreeSlotsOptions, RangeEvaluator, ScoreScheduleOptions, score_schedule};
+use daywatch_cal::{
+    score_schedule, DateRange, FindFreeSlotsOptions, RangeEvaluator, ScoreScheduleOptions,
+};
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct IsDateInRangeAssertion {
     date: String,
     expected: bool,
@@ -13,6 +16,7 @@ struct IsDateInRangeAssertion {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ExpandAssertion {
     from: String,
     to: String,
@@ -20,6 +24,7 @@ struct ExpandAssertion {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct TimeSlotExpected {
     start_time: String,
     #[serde(default)]
@@ -29,18 +34,21 @@ struct TimeSlotExpected {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct TimeSlotsAssertion {
     date: String,
     expected: Vec<TimeSlotExpected>,
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct RangeRefExpected {
     id: String,
     label: String,
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ConflictExpected {
     range_a: RangeRefExpected,
     range_b: RangeRefExpected,
@@ -52,12 +60,14 @@ struct ConflictExpected {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ConflictAssertion {
     date: String,
     expected: Vec<ConflictExpected>,
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct FreeSlotExpected {
     date: String,
     start_time: String,
@@ -66,6 +76,7 @@ struct FreeSlotExpected {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct FreeSlotOptions {
     #[serde(default)]
     day_start: Option<String>,
@@ -76,6 +87,7 @@ struct FreeSlotOptions {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct FreeSlotAssertion {
     date: String,
     options: FreeSlotOptions,
@@ -83,6 +95,7 @@ struct FreeSlotAssertion {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ScoreScheduleExpected {
     conflicts: u32,
     free_minutes: u32,
@@ -92,6 +105,7 @@ struct ScoreScheduleExpected {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ScoreScheduleOptionsFixture {
     #[serde(default)]
     focus_block_minutes: Option<u32>,
@@ -102,6 +116,7 @@ struct ScoreScheduleOptionsFixture {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ScoreScheduleAssertion {
     from: String,
     to: String,
@@ -110,6 +125,7 @@ struct ScoreScheduleAssertion {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct Fixture {
     #[allow(dead_code)]
     description: String,
@@ -171,18 +187,14 @@ fn run_fixture_file(path: &Path) {
                 ranges.iter().map(|r| (r.id.as_str(), r)).collect();
 
             for a in assertions {
-                let range_id = a
-                    .range_id
-                    .as_deref()
-                    .unwrap_or_else(|| panic!("range_id required in multi-range fixture for is_date_in_range"));
+                let range_id = a.range_id.as_deref().unwrap_or_else(|| {
+                    panic!("range_id required in multi-range fixture for is_date_in_range")
+                });
                 let range = range_map
                     .get(range_id)
                     .unwrap_or_else(|| panic!("Range id '{}' not found in fixture", range_id));
 
-                let context = format!(
-                    "{}: is_date_in_range({}, {})",
-                    file_stem, a.date, range_id
-                );
+                let context = format!("{}: is_date_in_range({}, {})", file_stem, a.date, range_id);
                 assert_eq!(
                     evaluator.is_date_in_range(&a.date, range),
                     a.expected,
@@ -209,23 +221,24 @@ fn run_fixture_file(path: &Path) {
             let occurrences = evaluator.expand(range, from_date, to_date);
             let actual_dates: Vec<String> = occurrences.iter().map(|o| o.date.clone()).collect();
 
-            let context = format!(
-                "{}: expand({:?} to {:?})",
-                file_stem, case.from, case.to
-            );
-            assert_eq!(
-                actual_dates, case.expected_dates,
-                "{}",
-                context
-            );
+            let context = format!("{}: expand({:?} to {:?})", file_stem, case.from, case.to);
+            assert_eq!(actual_dates, case.expected_dates, "{}", context);
 
             for occ in &occurrences {
                 assert_eq!(occ.range_id, range.id, "{}: occurrence.range_id", file_stem);
                 assert_eq!(occ.label, range.label, "{}: occurrence.label", file_stem);
                 if range.time_selector.is_some() {
-                    assert!(!occ.all_day, "{}: occurrence.all_day should be false with time_selector", file_stem);
+                    assert!(
+                        !occ.all_day,
+                        "{}: occurrence.all_day should be false with time_selector",
+                        file_stem
+                    );
                 } else {
-                    assert!(occ.all_day, "{}: occurrence.all_day should be true without time_selector", file_stem);
+                    assert!(
+                        occ.all_day,
+                        "{}: occurrence.all_day should be true without time_selector",
+                        file_stem
+                    );
                 }
             }
 
@@ -242,10 +255,7 @@ fn run_fixture_file(path: &Path) {
         for case in time_slots_cases {
             let slots = evaluator.get_time_slots(&case.date, range);
 
-            let context = format!(
-                "{}: get_time_slots({}, {})",
-                file_stem, case.date, range.id
-            );
+            let context = format!("{}: get_time_slots({}, {})", file_stem, case.date, range.id);
 
             assert_eq!(
                 slots.len(),
@@ -256,9 +266,7 @@ fn run_fixture_file(path: &Path) {
                 slots
             );
 
-            for (i, (actual, expected)) in
-                slots.iter().zip(case.expected.iter()).enumerate()
-            {
+            for (i, (actual, expected)) in slots.iter().zip(case.expected.iter()).enumerate() {
                 assert_eq!(
                     actual.start_time, expected.start_time,
                     "{} — slot[{}].start_time",
@@ -279,11 +287,7 @@ fn run_fixture_file(path: &Path) {
                     "{} — slot[{}].range_id",
                     context, i
                 );
-                assert_eq!(
-                    actual.label, range.label,
-                    "{} — slot[{}].label",
-                    context, i
-                );
+                assert_eq!(actual.label, range.label, "{} — slot[{}].label", context, i);
             }
             test_count += 1;
         }
@@ -306,9 +310,7 @@ fn run_fixture_file(path: &Path) {
                 conflicts
             );
 
-            for (i, (actual, expected)) in
-                conflicts.iter().zip(case.expected.iter()).enumerate()
-            {
+            for (i, (actual, expected)) in conflicts.iter().zip(case.expected.iter()).enumerate() {
                 assert_eq!(
                     actual.range_a.id, expected.range_a.id,
                     "{} — conflict[{}].range_a.id",
@@ -373,9 +375,7 @@ fn run_fixture_file(path: &Path) {
                 slots
             );
 
-            for (i, (actual, expected)) in
-                slots.iter().zip(case.expected.iter()).enumerate()
-            {
+            for (i, (actual, expected)) in slots.iter().zip(case.expected.iter()).enumerate() {
                 assert_eq!(
                     actual.date, expected.date,
                     "{} — free_slot[{}].date",
@@ -457,32 +457,45 @@ fn run_fixture_file(path: &Path) {
         }
     }
 
-    assert!(test_count > 0, "Fixture {:?} had no assertions to run", path);
+    assert!(
+        test_count > 0,
+        "Fixture {:?} had no assertions to run",
+        path
+    );
 }
 
 fn walk_fixtures(dir: &Path, files: &mut Vec<std::path::PathBuf>) {
-    if let Ok(entries) = fs::read_dir(dir) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if path.is_dir() {
-                walk_fixtures(&path, files);
-            } else if path.extension().map_or(false, |ext| ext == "json") {
-                files.push(path);
-            }
+    let entries = fs::read_dir(dir)
+        .unwrap_or_else(|e| panic!("Failed to read fixture directory {:?}: {}", dir, e));
+
+    for entry in entries {
+        let entry = entry.unwrap_or_else(|e| {
+            panic!("Failed to read fixture entry in {:?}: {}", dir, e);
+        });
+        let path = entry.path();
+        if path.is_dir() {
+            walk_fixtures(&path, files);
+        } else if path.extension().map_or(false, |ext| ext == "json") {
+            files.push(path);
         }
     }
 }
 
 #[test]
 fn conformance() {
-    let fixtures_dir =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests").join("fixtures");
+    let fixtures_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("fixtures");
 
     let mut files = Vec::new();
     walk_fixtures(&fixtures_dir, &mut files);
     files.sort();
 
-    assert!(!files.is_empty(), "No fixture files found in {:?}", fixtures_dir);
+    assert!(
+        !files.is_empty(),
+        "No fixture files found in {:?}",
+        fixtures_dir
+    );
 
     let mut total_fixtures = 0usize;
 

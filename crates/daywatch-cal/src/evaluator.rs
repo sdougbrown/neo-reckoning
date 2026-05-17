@@ -243,9 +243,7 @@ impl RangeEvaluator {
         let tz: Tz = tz_str
             .parse()
             .map_err(|e| format!("Invalid timezone '{}': {}", tz_str, e))?;
-        Ok(RangeEvaluator {
-            user_timezone: tz,
-        })
+        Ok(RangeEvaluator { user_timezone: tz })
     }
 
     // ── Public API ──────────────────────────────────────────────────────
@@ -339,14 +337,16 @@ impl RangeEvaluator {
                 repeat_every,
                 duration,
             } => {
-                let resolved_start =
-                    self.resolve_time(date, start_time, range.timezone.as_deref());
+                let resolved_start = self.resolve_time(date, start_time, range.timezone.as_deref());
                 let resolved_start = match resolved_start {
                     Some(r) => r,
                     None => return slots,
                 };
 
                 if let Some(rep) = repeat_every {
+                    if *rep == 0 {
+                        return slots;
+                    }
                     let end_boundary = match end_time {
                         Some(et) => self
                             .resolve_time(date, et, range.timezone.as_deref())
@@ -379,7 +379,7 @@ impl RangeEvaluator {
                     let dur = match (duration, &end) {
                         (Some(d), _) => Some(*d),
                         (None, Some(et)) => {
-                            Some(time_to_minutes(et) - time_to_minutes(&resolved_start))
+                            time_to_minutes(et).checked_sub(time_to_minutes(&resolved_start))
                         }
                         (None, None) => None,
                     };
@@ -425,7 +425,7 @@ impl RangeEvaluator {
                         range_id: range.id.clone(),
                         label: range.label.clone(),
                         all_day: false,
-                        display_type: None,
+                        display_type: range.display_type.clone(),
                     });
                 }
             } else {
@@ -436,7 +436,7 @@ impl RangeEvaluator {
                     range_id: range.id.clone(),
                     label: range.label.clone(),
                     all_day: true,
-                    display_type: None,
+                    display_type: range.display_type.clone(),
                 });
             }
         }
@@ -480,7 +480,7 @@ impl RangeEvaluator {
                     all_spans.push(RawSpan {
                         range_id: range.id.clone(),
                         label: range.label.clone(),
-                        display_type: None,
+                        display_type: range.display_type.clone(),
                         start_date: span_start.clone(),
                         end_date: prev_date.clone(),
                         days: span_days,
@@ -494,7 +494,7 @@ impl RangeEvaluator {
             all_spans.push(RawSpan {
                 range_id: range.id.clone(),
                 label: range.label.clone(),
-                display_type: None,
+                display_type: range.display_type.clone(),
                 start_date: span_start,
                 end_date: prev_date,
                 days: span_days,
@@ -632,11 +632,7 @@ impl RangeEvaluator {
             });
         }
 
-        results.sort_by(|a, b| {
-            a.start_date
-                .cmp(&b.start_date)
-                .then(a.lane.cmp(&b.lane))
-        });
+        results.sort_by(|a, b| a.start_date.cmp(&b.start_date).then(a.lane.cmp(&b.lane)));
 
         results
     }
@@ -679,8 +675,7 @@ impl RangeEvaluator {
                 }
                 seen.insert(pair_key);
 
-                let overlap_start =
-                    u32::max(slots[i].start_minutes, slots[j].start_minutes);
+                let overlap_start = u32::max(slots[i].start_minutes, slots[j].start_minutes);
                 let overlap_end = u32::min(slots[i].end_minutes, slots[j].end_minutes);
 
                 conflicts.push(Conflict {
@@ -727,8 +722,14 @@ impl RangeEvaluator {
         options: FindFreeSlotsOptions,
     ) -> Vec<FreeSlot> {
         let min_duration = options.min_duration.unwrap_or(15);
-        let day_start_min = time_to_minutes(options.day_start.as_deref().unwrap_or("00:00"));
-        let day_end_min = time_to_minutes(options.day_end.as_deref().unwrap_or("24:00"));
+        let day_start_min = match parse_hhmm(options.day_start.as_deref().unwrap_or("00:00")) {
+            Some((hour, minute)) => hour * 60 + minute,
+            None => return vec![],
+        };
+        let day_end_min = match parse_hhmm(options.day_end.as_deref().unwrap_or("24:00")) {
+            Some((hour, minute)) => hour * 60 + minute,
+            None => return vec![],
+        };
 
         let entries = self.get_timed_entries_for_day(ranges, date);
 
@@ -859,15 +860,13 @@ impl RangeEvaluator {
 
     // ── Private helpers ──────────────────────────────────────────────────
 
-    fn resolve_time(
-        &self,
-        date_str: &str,
-        time: &str,
-        range_tz: Option<&str>,
-    ) -> Option<String> {
+    fn resolve_time(&self, date_str: &str, time: &str, range_tz: Option<&str>) -> Option<String> {
         let tz_str = match range_tz {
             Some(tz) => tz,
-            None => return Some(time.to_owned()),
+            None => {
+                parse_hhmm(time)?;
+                return Some(time.to_owned());
+            }
         };
         let range_tz: Tz = tz_str.parse().ok()?;
         let (hour, minute) = parse_hhmm(time)?;
@@ -884,12 +883,7 @@ impl RangeEvaluator {
         Some(format!("{:02}:{:02}", user_dt.hour(), user_dt.minute()))
     }
 
-    fn get_candidate_days(
-        &self,
-        range: &DateRange,
-        from_str: &str,
-        to_str: &str,
-    ) -> Vec<String> {
+    fn get_candidate_days(&self, range: &DateRange, from_str: &str, to_str: &str) -> Vec<String> {
         let compiled = compile_range(range);
 
         let (range_from, range_to) = get_bounds(range);
@@ -917,6 +911,7 @@ impl RangeEvaluator {
                 .filter(|d| {
                     d.as_str() >= effective_from.as_str()
                         && d.as_str() <= effective_to.as_str()
+                        && !is_date_excluded(d, &compiled)
                 })
                 .cloned()
                 .collect();
@@ -932,8 +927,10 @@ impl RangeEvaluator {
         };
 
         if !compiled.has_recurrence {
-            let all_days: Vec<String> =
-                date_range(from_nd, to_nd).into_iter().map(format_date).collect();
+            let all_days: Vec<String> = date_range(from_nd, to_nd)
+                .into_iter()
+                .map(format_date)
+                .collect();
             if compiled.except_dates_set.is_none() && compiled.except_between.is_none() {
                 return all_days;
             }
@@ -944,27 +941,21 @@ impl RangeEvaluator {
         }
 
         if compiled.date_mask.iter().any(|&x| x) {
-            return self.generate_candidate_days_by_day_of_month(
-                from_nd,
-                to_nd,
-                &compiled,
-            );
+            return self.generate_candidate_days_by_day_of_month(from_nd, to_nd, &compiled);
         }
 
         if compiled.weekday_mask.iter().any(|&x| x) {
-            return self.generate_candidate_days_by_weekday(
-                from_nd,
-                to_nd,
-                &compiled,
-            );
+            return self.generate_candidate_days_by_weekday(from_nd, to_nd, &compiled);
         }
 
         if compiled.month_mask.iter().any(|&x| x) {
             return self.generate_candidate_days_by_month(from_nd, to_nd, &compiled);
         }
 
-        let all_days: Vec<String> =
-            date_range(from_nd, to_nd).into_iter().map(format_date).collect();
+        let all_days: Vec<String> = date_range(from_nd, to_nd)
+            .into_iter()
+            .map(format_date)
+            .collect();
         all_days
             .into_iter()
             .filter(|day| self.is_date_in_range(day, range))
@@ -980,9 +971,7 @@ impl RangeEvaluator {
         let mut results: Vec<String> = Vec::new();
 
         for_each_month_in_range(from, to, |year, month, start_day, end_day| {
-            if compiled.month_mask.iter().any(|&x| x)
-                && !compiled.month_mask[month as usize]
-            {
+            if compiled.month_mask.iter().any(|&x| x) && !compiled.month_mask[month as usize] {
                 return;
             }
 
@@ -1028,19 +1017,15 @@ impl RangeEvaluator {
         let mut results: Vec<String> = Vec::new();
 
         for_each_month_in_range(from, to, |year, month, start_day, end_day| {
-            if compiled.month_mask.iter().any(|&x| x)
-                && !compiled.month_mask[month as usize]
-            {
+            if compiled.month_mask.iter().any(|&x| x) && !compiled.month_mask[month as usize] {
                 return;
             }
 
-            let first_of_month =
-                match NaiveDate::from_ymd_opt(year, month, 1) {
-                    Some(d) => d,
-                    None => return,
-                };
-            let first_weekday =
-                first_of_month.weekday().num_days_from_sunday() as i32;
+            let first_of_month = match NaiveDate::from_ymd_opt(year, month, 1) {
+                Some(d) => d,
+                None => return,
+            };
+            let first_weekday = first_of_month.weekday().num_days_from_sunday() as i32;
 
             for weekday in 0..7i32 {
                 if !compiled.weekday_mask[weekday as usize] {
@@ -1054,9 +1039,7 @@ impl RangeEvaluator {
                 }
 
                 while day <= end_day as i32 {
-                    if let Some(nd) =
-                        NaiveDate::from_ymd_opt(year, month, day as u32)
-                    {
+                    if let Some(nd) = NaiveDate::from_ymd_opt(year, month, day as u32) {
                         let date_str = format_date(nd);
                         if !is_date_excluded(&date_str, compiled) {
                             results.push(date_str);
@@ -1084,10 +1067,8 @@ impl RangeEvaluator {
                 return;
             }
 
-            let month_from =
-                NaiveDate::from_ymd_opt(year, month, start_day).map(format_date);
-            let month_to =
-                NaiveDate::from_ymd_opt(year, month, end_day).map(format_date);
+            let month_from = NaiveDate::from_ymd_opt(year, month, start_day).map(format_date);
+            let month_to = NaiveDate::from_ymd_opt(year, month, end_day).map(format_date);
 
             let (mf, mt) = match (month_from, month_to) {
                 (Some(f), Some(t)) => (f, t),
@@ -1103,12 +1084,12 @@ impl RangeEvaluator {
                 None => return,
             };
 
-            let days: Vec<String> =
-                date_range(from_nd, to_nd).into_iter().map(format_date).collect();
+            let days: Vec<String> = date_range(from_nd, to_nd)
+                .into_iter()
+                .map(format_date)
+                .collect();
 
-            if compiled.except_dates_set.is_none()
-                && compiled.except_between.is_none()
-            {
+            if compiled.except_dates_set.is_none() && compiled.except_between.is_none() {
                 results.extend(days);
                 return;
             }
@@ -1149,6 +1130,7 @@ mod tests {
             id: id.to_string(),
             label: label.to_string(),
             title: None,
+            display_type: None,
             day_selector,
             time_selector,
             timezone: None,
@@ -1209,11 +1191,7 @@ mod tests {
             "1",
             "test",
             DaySelector::Explicit {
-                dates: vec![
-                    day("2026-03-01"),
-                    day("2026-03-10"),
-                    day("2026-03-20"),
-                ],
+                dates: vec![day("2026-03-01"), day("2026-03-10"), day("2026-03-20")],
                 except_dates: None,
                 except_between: Some(vec![(day("2026-03-05"), day("2026-03-15"))]),
             },
@@ -1411,6 +1389,49 @@ mod tests {
     }
 
     #[test]
+    fn test_time_slots_repeat_every_zero_returns_empty() {
+        let ev = evaluator();
+        let range = make_range(
+            "1",
+            "test",
+            DaySelector::Explicit {
+                dates: vec![day("2026-03-02")],
+                except_dates: None,
+                except_between: None,
+            },
+            Some(TimeSelector::Window {
+                start_time: "09:00".to_string(),
+                end_time: Some("10:00".to_string()),
+                repeat_every: Some(0),
+                duration: Some(15),
+            }),
+        );
+        assert!(ev.get_time_slots("2026-03-02", &range).is_empty());
+    }
+
+    #[test]
+    fn test_time_slots_reversed_window_does_not_underflow() {
+        let ev = evaluator();
+        let range = make_range(
+            "1",
+            "test",
+            DaySelector::Explicit {
+                dates: vec![day("2026-03-02")],
+                except_dates: None,
+                except_between: None,
+            },
+            Some(TimeSelector::Window {
+                start_time: "10:00".to_string(),
+                end_time: Some("09:00".to_string()),
+                repeat_every: None,
+                duration: None,
+            }),
+        );
+        let slots = ev.get_time_slots("2026-03-02", &range);
+        assert_eq!(slots[0].duration, None);
+    }
+
+    #[test]
     fn test_time_slots_window_duration_only() {
         let ev = evaluator();
         let range = make_range(
@@ -1474,6 +1495,28 @@ mod tests {
         assert!(occurrences[0].all_day);
         assert_eq!(occurrences[0].date, "2026-03-02");
         assert_eq!(occurrences[1].date, "2026-03-03");
+    }
+
+    #[test]
+    fn test_expand_explicit_dates_respects_exclusions() {
+        let ev = evaluator();
+        let range = make_range(
+            "1",
+            "test",
+            DaySelector::Explicit {
+                dates: vec![day("2026-03-01"), day("2026-03-02"), day("2026-03-03")],
+                except_dates: Some(vec![day("2026-03-02")]),
+                except_between: None,
+            },
+            None,
+        );
+        let occurrences = ev.expand(
+            &range,
+            parse_date("2026-03-01").unwrap(),
+            parse_date("2026-03-03").unwrap(),
+        );
+        let dates: Vec<&str> = occurrences.iter().map(|occ| occ.date.as_str()).collect();
+        assert_eq!(dates, vec!["2026-03-01", "2026-03-03"]);
     }
 
     #[test]
@@ -1583,8 +1626,7 @@ mod tests {
                 duration: None,
             }),
         );
-        let entries =
-            ev.get_timed_entries_for_day(&[range1, range2], "2026-03-02");
+        let entries = ev.get_timed_entries_for_day(&[range1, range2], "2026-03-02");
         assert_eq!(entries.len(), 2);
         assert_eq!(entries[0].start_minutes, 540); // 09:00
         assert_eq!(entries[1].start_minutes, 600); // 10:00
@@ -1815,11 +1857,7 @@ mod tests {
                 duration: None,
             }),
         );
-        let free = ev.find_free_slots(
-            &[range],
-            "2026-03-02",
-            FindFreeSlotsOptions::default(),
-        );
+        let free = ev.find_free_slots(&[range], "2026-03-02", FindFreeSlotsOptions::default());
         assert!(!free.is_empty());
         // Should have a free slot before 10:00
         let morning = free.iter().find(|s| s.start_time == "00:00");
@@ -1968,8 +2006,7 @@ mod tests {
         );
         let from = parse_date("2026-03-01").unwrap();
         let to = parse_date("2026-03-05").unwrap();
-        let slot =
-            ev.find_next_free_slot(&[range], from, to, 60, FindFreeSlotsOptions::default());
+        let slot = ev.find_next_free_slot(&[range], from, to, 60, FindFreeSlotsOptions::default());
         assert!(slot.is_some());
         let s = slot.unwrap();
         // Should find a free slot on 2026-03-01 (no busy range) or early on 2026-03-02
@@ -1997,13 +2034,8 @@ mod tests {
         );
         let from = parse_date("2026-03-02").unwrap();
         let to = parse_date("2026-03-02").unwrap();
-        let slot = ev.find_next_free_slot(
-            &[all_day],
-            from,
-            to,
-            15,
-            FindFreeSlotsOptions::default(),
-        );
+        let slot =
+            ev.find_next_free_slot(&[all_day], from, to, 15, FindFreeSlotsOptions::default());
         assert!(slot.is_none());
     }
 
@@ -2073,7 +2105,9 @@ mod tests {
         // 3 spans total: range2(week1), range1(week1), range1(week2)
         assert_eq!(spans.len(), 3);
         // range1 and range2 overlap in week1, so they get different lanes
-        let span_a = spans.iter().find(|s| s.range_id == "1" && s.start_date == "2026-03-02");
+        let span_a = spans
+            .iter()
+            .find(|s| s.range_id == "1" && s.start_date == "2026-03-02");
         let span_b = spans.iter().find(|s| s.range_id == "2");
         assert!(span_a.is_some());
         assert!(span_b.is_some());
@@ -2085,32 +2119,44 @@ mod tests {
         let ev = evaluator();
         // Three ranges all active the same week
         let r1 = make_range(
-            "1", "A",
+            "1",
+            "A",
             DaySelector::Recurrence {
                 every_weekday: Some(vec![1, 2, 3, 4, 5]),
-                every_date: None, every_month: None,
-                from_date: Some(day("2026-03-02")), to_date: Some(day("2026-03-06")),
-                except_dates: None, except_between: None,
+                every_date: None,
+                every_month: None,
+                from_date: Some(day("2026-03-02")),
+                to_date: Some(day("2026-03-06")),
+                except_dates: None,
+                except_between: None,
             },
             None,
         );
         let r2 = make_range(
-            "2", "B",
+            "2",
+            "B",
             DaySelector::Recurrence {
                 every_weekday: Some(vec![1, 2, 3, 4, 5]),
-                every_date: None, every_month: None,
-                from_date: Some(day("2026-03-02")), to_date: Some(day("2026-03-06")),
-                except_dates: None, except_between: None,
+                every_date: None,
+                every_month: None,
+                from_date: Some(day("2026-03-02")),
+                to_date: Some(day("2026-03-06")),
+                except_dates: None,
+                except_between: None,
             },
             None,
         );
         let r3 = make_range(
-            "3", "C",
+            "3",
+            "C",
             DaySelector::Recurrence {
                 every_weekday: Some(vec![1, 2, 3, 4, 5]),
-                every_date: None, every_month: None,
-                from_date: Some(day("2026-03-02")), to_date: Some(day("2026-03-04")),
-                except_dates: None, except_between: None,
+                every_date: None,
+                every_month: None,
+                from_date: Some(day("2026-03-02")),
+                to_date: Some(day("2026-03-04")),
+                except_dates: None,
+                except_between: None,
             },
             None,
         );

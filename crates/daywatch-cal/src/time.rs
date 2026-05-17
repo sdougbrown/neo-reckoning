@@ -1,5 +1,5 @@
-use chrono::NaiveDate;
 use chrono::Datelike;
+use chrono::NaiveDate;
 
 pub(crate) fn parse_date(date: &str) -> Option<NaiveDate> {
     NaiveDate::parse_from_str(date, "%Y-%m-%d").ok()

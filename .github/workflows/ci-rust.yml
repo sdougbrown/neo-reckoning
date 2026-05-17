@@ -3,6 +3,8 @@ name: CI (Rust)
 on:
   push:
     branches: [main]
+    tags:
+      - 'rust-v*'
     paths:
       - 'crates/**'
       - 'Cargo.toml'
