@@ -127,9 +127,7 @@ describe('time utilities', () => {
     });
 
     it('returns null for a spring-forward DST gap when source and target timezone match', () => {
-      expect(
-        convertTime('2026-03-08', '02:30', 'America/New_York', 'America/New_York'),
-      ).toBeNull();
+      expect(convertTime('2026-03-08', '02:30', 'America/New_York', 'America/New_York')).toBeNull();
     });
 
     it('builds UTC dates without shifting the instant', () => {
