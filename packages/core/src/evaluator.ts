@@ -57,7 +57,7 @@ export class RangeEvaluator {
   isDateInRange(dateStr: string, range: DateRange): boolean {
     const compiled = this.getCompiledRange(range);
 
-    // Check fixedBetween / fromDate / toDate bounds first
+    // Check fromDate / toDate bounds first
     if (!this.isDateInBounds(dateStr, range)) {
       return false;
     }

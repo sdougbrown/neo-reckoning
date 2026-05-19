@@ -1,5 +1,5 @@
 mod evaluator;
-pub mod scoring;
+mod scoring;
 mod time;
 mod types;
 

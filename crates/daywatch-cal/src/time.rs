@@ -32,9 +32,12 @@ pub(crate) fn minutes_to_time(minutes: u32) -> String {
     format!("{:02}:{:02}", hour, minute)
 }
 
-pub(crate) fn add_minutes(time: &str, delta: u32) -> String {
+pub(crate) fn add_minutes(time: &str, delta: u32) -> Option<String> {
     let total = time_to_minutes(time) + delta;
-    minutes_to_time(total)
+    if total >= 1440 {
+        return None; // past midnight
+    }
+    Some(minutes_to_time(total))
 }
 
 pub(crate) fn format_date(date: NaiveDate) -> String {
@@ -105,7 +108,7 @@ mod tests {
 
     #[test]
     fn test_add_minutes() {
-        assert_eq!(add_minutes("09:00", 30), "09:30");
+        assert_eq!(add_minutes("09:00", 30).unwrap(), "09:30");
     }
 
     #[test]

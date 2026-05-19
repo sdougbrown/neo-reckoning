@@ -319,7 +319,7 @@ impl RangeEvaluator {
                         None => continue,
                     };
 
-                    let end_time = duration.map(|d| add_minutes(&resolved, d));
+                    let end_time = duration.and_then(|d| add_minutes(&resolved, d));
                     let dur = *duration;
 
                     slots.push(TimeSlot {
@@ -358,7 +358,7 @@ impl RangeEvaluator {
 
                     while current_minutes < end_minutes {
                         let st = minutes_to_time(current_minutes);
-                        let et = duration.map(|d| add_minutes(&st, d));
+                        let et = duration.and_then(|d| add_minutes(&st, d));
 
                         slots.push(TimeSlot {
                             start_time: st,
@@ -386,7 +386,7 @@ impl RangeEvaluator {
 
                     let end_for_slot = match (&end, dur) {
                         (Some(et), _) => Some(et.clone()),
-                        (None, Some(d)) => Some(add_minutes(&resolved_start, d)),
+                        (None, Some(d)) => add_minutes(&resolved_start, d),
                         (None, None) => None,
                     };
 

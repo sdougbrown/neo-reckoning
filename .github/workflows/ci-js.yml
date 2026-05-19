@@ -6,6 +6,7 @@ on:
     paths:
       - 'packages/**'
       - 'examples/**'
+      - 'conformance/**'
       - 'package.json'
       - 'yarn.lock'
       - '.github/workflows/ci-js.yml'
@@ -14,6 +15,7 @@ on:
     paths:
       - 'packages/**'
       - 'examples/**'
+      - 'conformance/**'
       - 'package.json'
       - 'yarn.lock'
       - '.github/workflows/ci-js.yml'

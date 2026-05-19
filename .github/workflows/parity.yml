@@ -5,11 +5,13 @@ on:
     paths:
       - 'packages/core/src/**'
       - 'crates/daywatch-cal/src/**'
+      - 'conformance/**'
       - '.github/workflows/parity.yml'
   pull_request:
     paths:
       - 'packages/core/src/**'
       - 'crates/daywatch-cal/src/**'
+      - 'conformance/**'
       - '.github/workflows/parity.yml'
 
 jobs:

@@ -7,6 +7,7 @@ on:
       - 'rust-v*'
     paths:
       - 'crates/**'
+      - 'conformance/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - '.github/workflows/ci-rust.yml'
@@ -14,6 +15,7 @@ on:
     branches: [main]
     paths:
       - 'crates/**'
+      - 'conformance/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - '.github/workflows/ci-rust.yml'
