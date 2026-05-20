@@ -231,10 +231,10 @@ export class RangeEvaluator {
       for (const slot of timeSlots) {
         const startMinutes = timeToMinutes(slot.startTime);
         const endMinutes = slot.endTime
-          // Adds 1440 per day for cross-midnight slots. Multi-day spans (>24h
-          // duration) would need the actual day difference, but cal-rules
-          // policies currently constrain durations to fit within a single day.
-          ? timeToMinutes(slot.endTime) + (slot.endDate ? 1440 : 0)
+          ? // Adds 1440 per day for cross-midnight slots. Multi-day spans (>24h
+            // duration) would need the actual day difference, but cal-rules
+            // policies currently constrain durations to fit within a single day.
+            timeToMinutes(slot.endTime) + (slot.endDate ? 1440 : 0)
           : startMinutes + (slot.duration ?? 0);
 
         entries.push({

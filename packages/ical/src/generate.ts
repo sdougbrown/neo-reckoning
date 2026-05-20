@@ -36,7 +36,11 @@ function formatTime(date: Date): string {
   return `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
 }
 
-function addMinutesUTC(date: string, time: string, minutes: number): { date: string; time: string } {
+function addMinutesUTC(
+  date: string,
+  time: string,
+  minutes: number,
+): { date: string; time: string } {
   const { year, month, day } = parseDate(date);
   const [hour, minute] = time.split(':').map(Number);
   const next = new Date(Date.UTC(year, month - 1, day, hour, minute));
