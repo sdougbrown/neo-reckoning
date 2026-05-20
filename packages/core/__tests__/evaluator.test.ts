@@ -464,6 +464,20 @@ describe('RangeEvaluator', () => {
 
       expect(occurrences.map((o) => o.date)).toEqual(['2024-02-29']);
     });
+
+    it('includes endDate on cross-midnight occurrences', () => {
+      const range = makeRange({
+        dates: ['2026-03-21'],
+        startTime: '23:00',
+        duration: 120,
+      });
+      const from = new Date(2026, 2, 21);
+      const to = new Date(2026, 3, 1);
+      const occurrences = utcEvaluator.expand(range, from, to);
+      expect(occurrences).toHaveLength(1);
+      expect(occurrences[0].endTime).toBe('01:00');
+      expect(occurrences[0].endDate).toBe('2026-03-22');
+    });
   });
 
   describe('expandDay', () => {
@@ -534,6 +548,26 @@ describe('RangeEvaluator', () => {
 
       const dt = new Date(2026, 2, 23, 15, 30);
       expect(utcEvaluator.isInRange(dt, range)).toBe(true);
+    });
+
+    it('returns true for a datetime within a cross-midnight slot', () => {
+      const range = makeRange({
+        dates: ['2026-03-21'],
+        startTime: '23:00',
+        duration: 120,
+      });
+      const datetime = new Date(2026, 2, 21, 23, 30);
+      expect(utcEvaluator.isInRange(datetime, range)).toBe(true);
+    });
+
+    it('returns false for a datetime at 00:30 on the same day (not in the cross-midnight slot)', () => {
+      const range = makeRange({
+        dates: ['2026-03-21'],
+        startTime: '23:00',
+        duration: 120,
+      });
+      const datetime = new Date(2026, 2, 21, 0, 30);
+      expect(utcEvaluator.isInRange(datetime, range)).toBe(false);
     });
   });
 

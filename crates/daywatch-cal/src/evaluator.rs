@@ -1495,6 +1495,31 @@ mod tests {
     }
 
     #[test]
+    fn test_time_slots_cross_midnight_end_date() {
+        let ev = evaluator();
+        let range = make_range(
+            "night",
+            "Night Shift",
+            DaySelector::Explicit {
+                dates: vec![day("2026-03-21")],
+                except_dates: None,
+                except_between: None,
+            },
+            Some(TimeSelector::Window {
+                start_time: "22:00".to_string(),
+                end_time: None,
+                repeat_every: None,
+                duration: Some(150),
+            }),
+        );
+        let slots = ev.get_time_slots("2026-03-21", &range);
+        assert_eq!(slots.len(), 1);
+        assert_eq!(slots[0].start_time, "22:00");
+        assert_eq!(slots[0].end_time, Some("00:30".to_string()));
+        assert_eq!(slots[0].end_date, Some("2026-03-22".to_string()));
+    }
+
+    #[test]
     fn test_time_slots_no_time_selector() {
         let ev = evaluator();
         let range = make_range(
@@ -1629,6 +1654,31 @@ mod tests {
         assert_eq!(entries.len(), 1);
         assert_eq!(entries[0].start_minutes, 540); // 09:00
         assert_eq!(entries[0].end_minutes, 600); // 10:00
+    }
+
+    #[test]
+    fn test_timed_entries_cross_midnight() {
+        let ev = evaluator();
+        let range = make_range(
+            "late",
+            "Late Night",
+            DaySelector::Explicit {
+                dates: vec![day("2026-03-21")],
+                except_dates: None,
+                except_between: None,
+            },
+            Some(TimeSelector::Window {
+                start_time: "23:00".to_string(),
+                end_time: None,
+                repeat_every: None,
+                duration: Some(120),
+            }),
+        );
+        let entries = ev.get_timed_entries_for_day(&[range], "2026-03-21");
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].start_minutes, 1380); // 23:00
+        assert_eq!(entries[0].end_minutes, 1500); // 01:00 next day
+        assert_eq!(entries[0].slot.end_date, Some("2026-03-22".to_string()));
     }
 
     #[test]

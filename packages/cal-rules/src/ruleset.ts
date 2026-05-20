@@ -151,6 +151,14 @@ export const rangeInputUmp = umpire({
       },
       { reason: 'toDate must be on or after fromDate' },
     ),
+    /**
+     * The core engine fully supports cross-midnight durations via endDate on
+     * TimeSlot/Occurrence. This rule is intentionally stricter: cal-rules
+     * validates ingress policy for DateRange inputs, and ranges that exceed
+     * midnight are flagged as foul rather than silently producing multi-day
+     * slots. Consumers that need cross-midnight ranges should bypass this
+     * rule or handle the foul downstream.
+     */
     fairWhen(
       'duration',
       (duration, values) => {

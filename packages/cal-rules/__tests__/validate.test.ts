@@ -321,6 +321,7 @@ describe('@daywatch/cal-rules', () => {
           issue.message === 'duration would exceed midnight (startTime + duration > 24:00)',
       ),
     ).toBe(true);
+    expect(result.candidate.duration).toBe(120);
   });
 
   test('accepts duration that fits within the day', () => {
