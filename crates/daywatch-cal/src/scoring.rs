@@ -122,7 +122,7 @@ pub fn score_schedule(
 
         // Free time
         let occupied = merge_intervals(&timed_entries, day_start_min, day_end_min);
-        let working_minutes = day_end_min - day_start_min;
+        let working_minutes = day_end_min.saturating_sub(day_start_min);
         let occupied_minutes: u32 = occupied.iter().map(|(s, e)| e - s).sum();
         let free_minutes = working_minutes - occupied_minutes;
         total_free_minutes += free_minutes;
@@ -291,5 +291,6 @@ mod tests {
         // occupied: 10-13 merged → 3h → 5h free
         assert_eq!(score.free_minutes, 5 * 60);
         assert_eq!(score.conflict_days, 1);
+        assert_eq!(score.avg_context_switches, 1.0);
     }
 }

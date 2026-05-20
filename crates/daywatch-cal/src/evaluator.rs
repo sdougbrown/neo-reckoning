@@ -619,6 +619,7 @@ impl RangeEvaluator {
         let mut results: Vec<SpanInfo> = Vec::new();
         for i in 0..n {
             let span = &all_spans[i];
+            debug_assert!(component_of[i].is_some(), "BFS should assign every span a component");
             results.push(SpanInfo {
                 range_id: span.range_id.clone(),
                 label: span.label.clone(),
@@ -994,12 +995,11 @@ impl RangeEvaluator {
                     }
                 }
 
-                let date_str = format_date(
-                    NaiveDate::from_ymd_opt(year, month, d)
-                        .expect("from_ymd_opt failed with valid year/month/day"),
-                );
-                if !is_date_excluded(&date_str, compiled) {
-                    results.push(date_str);
+                if let Some(date) = NaiveDate::from_ymd_opt(year, month, d) {
+                    let date_str = format_date(date);
+                    if !is_date_excluded(&date_str, compiled) {
+                        results.push(date_str);
+                    }
                 }
             }
         });
