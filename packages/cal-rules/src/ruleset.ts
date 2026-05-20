@@ -167,8 +167,7 @@ export const rangeInputUmp = umpire({
         return timeToMinutes(values.startTime) + duration <= 1440;
       },
       {
-        reason:
-          'duration would exceed midnight (startTime + duration > 24:00)',
+        reason: 'duration would exceed midnight (startTime + duration > 24:00)',
       },
     ),
   ],

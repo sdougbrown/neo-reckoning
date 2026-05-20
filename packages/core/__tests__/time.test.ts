@@ -62,7 +62,10 @@ describe('time utilities', () => {
     });
 
     it('handles crossing two midnights (48+ hour duration)', () => {
-      expect(addMinutes('2026-03-21', '12:00', 2880)).toEqual({ date: '2026-03-23', time: '12:00' });
+      expect(addMinutes('2026-03-21', '12:00', 2880)).toEqual({
+        date: '2026-03-23',
+        time: '12:00',
+      });
     });
 
     it('handles midnight boundary (22:00 + 120 = 00:00 next day)', () => {
