@@ -1,4 +1,5 @@
 import type { DateRange, Occurrence, TimeSlot, SpanInfo, Conflict, FreeSlot } from './types.js';
+import type { AddMinutesResult } from './time.js';
 import {
   parseDate,
   getDayOfWeek,
@@ -117,14 +118,20 @@ export class RangeEvaluator {
         if (resolved === null) continue; // DST gap
 
         let endTime: string | null = null;
+        let endDate: string | undefined = undefined;
         let duration: number | null = range.duration ?? null;
         if (duration) {
-          endTime = addMinutes(resolved, duration);
+          const result: AddMinutesResult = addMinutes(dateStr, resolved, duration);
+          endTime = result.time;
+          if (result.date !== dateStr) {
+            endDate = result.date;
+          }
         }
 
         slots.push({
           startTime: resolved,
           endTime,
+          endDate,
           duration,
           rangeId: range.id,
           label: range.label,
@@ -144,14 +151,20 @@ export class RangeEvaluator {
         while (currentMinutes < endMinutes) {
           const startTime = formatTime(Math.floor(currentMinutes / 60), currentMinutes % 60);
           let endTime: string | null = null;
+          let endDate: string | undefined = undefined;
           let duration: number | null = range.duration ?? null;
           if (duration) {
-            endTime = addMinutes(startTime, duration);
+            const result: AddMinutesResult = addMinutes(dateStr, startTime, duration);
+            endTime = result.time;
+            if (result.date !== dateStr) {
+              endDate = result.date;
+            }
           }
 
           slots.push({
             startTime,
             endTime,
+            endDate,
             duration,
             rangeId: range.id,
             label: range.label,
@@ -162,6 +175,7 @@ export class RangeEvaluator {
       } else {
         // Single time block
         let endTime: string | null = null;
+        let endDate: string | undefined = undefined;
         if (range.endTime) {
           endTime = this.resolveTime(dateStr, range.endTime, range.timezone);
         }
@@ -171,12 +185,17 @@ export class RangeEvaluator {
           duration = timeToMinutes(endTime) - timeToMinutes(resolvedStart);
         }
         if (!endTime && duration) {
-          endTime = addMinutes(resolvedStart, duration);
+          const result: AddMinutesResult = addMinutes(dateStr, resolvedStart, duration);
+          endTime = result.time;
+          if (result.date !== dateStr) {
+            endDate = result.date;
+          }
         }
 
         slots.push({
           startTime: resolvedStart,
           endTime,
+          endDate,
           duration,
           rangeId: range.id,
           label: range.label,
@@ -212,7 +231,7 @@ export class RangeEvaluator {
       for (const slot of timeSlots) {
         const startMinutes = timeToMinutes(slot.startTime);
         const endMinutes = slot.endTime
-          ? timeToMinutes(slot.endTime)
+          ? timeToMinutes(slot.endTime) + (slot.endDate ? 1440 : 0)
           : startMinutes + (slot.duration ?? 0);
 
         entries.push({
@@ -248,7 +267,9 @@ export class RangeEvaluator {
     const slots = this.getTimeSlots(dateStr, range);
     for (const slot of slots) {
       const slotStart = timeToMinutes(slot.startTime);
-      const slotEnd = slot.endTime ? timeToMinutes(slot.endTime) : slotStart + (slot.duration ?? 0);
+      const slotEnd = slot.endTime
+        ? timeToMinutes(slot.endTime) + (slot.endDate ? 1440 : 0)
+        : slotStart + (slot.duration ?? 0);
 
       if (currentMinutes >= slotStart && currentMinutes < slotEnd) {
         return true;
@@ -293,6 +314,7 @@ export class RangeEvaluator {
             date: day,
             startTime: slot.startTime,
             endTime: slot.endTime,
+            endDate: slot.endDate,
             rangeId: range.id,
             label: range.label,
             allDay: false,

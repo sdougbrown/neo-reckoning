@@ -212,6 +212,33 @@ describe('RangeEvaluator', () => {
       const slots = utcEvaluator.getTimeSlots('2026-03-23', range);
       expect(slots).toHaveLength(0);
     });
+
+    it('cross-midnight slot sets endDate and endTime correctly', () => {
+      const range = makeRange({
+        startTime: '23:00',
+        duration: 120,
+      });
+      const slots = utcEvaluator.getTimeSlots('2026-03-21', range);
+      expect(slots).toHaveLength(1);
+      expect(slots[0]).toMatchObject({
+        startTime: '23:00',
+        endTime: '01:00',
+        endDate: '2026-03-22',
+        duration: 120,
+      });
+    });
+
+    it('getTimedEntriesForDay computes endMinutes correctly for cross-midnight slots', () => {
+      const range = makeRange({
+        startTime: '23:00',
+        duration: 120,
+      });
+      const entries = evaluator.getTimedEntriesForDay([range], '2026-03-21');
+      expect(entries).toHaveLength(1);
+      expect(entries[0].startMinutes).toBe(1380); // 23:00 = 23*60
+      expect(entries[0].endMinutes).toBe(1500); // 01:00 next day = 1440 + 60
+      expect(entries[0].slot.endDate).toBe('2026-03-22');
+    });
   });
 
   describe('everyHour + day recurrence (AND combination)', () => {

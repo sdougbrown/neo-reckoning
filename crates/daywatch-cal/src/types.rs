@@ -303,6 +303,8 @@ pub struct Occurrence {
     pub date: String,
     pub start_time: Option<String>,
     pub end_time: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub end_date: Option<String>,
     pub range_id: String,
     pub label: String,
     pub all_day: bool,
@@ -314,6 +316,8 @@ pub struct Occurrence {
 pub struct TimeSlot {
     pub start_time: String,
     pub end_time: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub end_date: Option<String>,
     pub duration: Option<u32>,
     pub range_id: String,
     pub label: String,
@@ -780,6 +784,7 @@ mod tests {
         let slot = TimeSlot {
             start_time: "09:00".to_string(),
             end_time: Some("09:30".to_string()),
+            end_date: None,
             duration: Some(30),
             range_id: "r1".to_string(),
             label: "Focus".to_string(),

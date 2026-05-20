@@ -107,11 +107,21 @@ export function timeToMinutes(time: string): number {
   return parseTwoDigits(time, 0) * 60 + parseTwoDigits(time, 3);
 }
 
-/** Add minutes to a time string, clamping at 24:00. Returns null if result >= 24:00. */
-export function addMinutes(time: string, minutes: number): string | null {
-  const total = timeToMinutes(time) + minutes;
-  if (total >= 1440) return null; // past midnight
-  return minutesToTime(total);
+export interface AddMinutesResult {
+  date: string;
+  time: string;
+}
+
+export function addMinutes(date: string, time: string, minutes: number): AddMinutesResult {
+  const { year, month, day } = parseDate(date);
+  const { hour, minute } = parseTime(time);
+  const next = new Date(year, month, day, hour, minute);
+  next.setMinutes(next.getMinutes() + minutes);
+
+  return {
+    date: formatDate(next),
+    time: formatTime(next.getHours(), next.getMinutes()),
+  };
 }
 
 /** Parse "YYYY-MM-DD" into { year, month, day } */

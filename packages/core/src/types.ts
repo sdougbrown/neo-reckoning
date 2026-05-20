@@ -95,14 +95,12 @@ export interface Occurrence {
   startTime: string | null;
   /** End time in HH:mm format, null for all-day or when no end is defined */
   endTime: string | null;
-  /** ID of the source DateRange */
   rangeId: string;
-  /** Label from the source DateRange */
   label: string;
-  /** Whether this is an all-day occurrence (no time fields) */
   allDay: boolean;
-  /** Display type hint passed through from the source DateRange */
   displayType?: string;
+  /** End date in YYYY-MM-DD format, present when endTime crosses midnight */
+  endDate?: string;
 }
 
 /**
@@ -130,10 +128,10 @@ export interface TimeSlot {
   endTime: string | null;
   /** Duration in minutes, null if not computable */
   duration: number | null;
-  /** ID of the source DateRange */
   rangeId: string;
-  /** Label from the source DateRange */
   label: string;
+  /** End date in YYYY-MM-DD format, present when endTime crosses midnight */
+  endDate?: string;
 }
 
 /**

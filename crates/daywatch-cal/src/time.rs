@@ -32,12 +32,22 @@ pub(crate) fn minutes_to_time(minutes: u32) -> String {
     format!("{:02}:{:02}", hour, minute)
 }
 
-pub(crate) fn add_minutes(time: &str, delta: u32) -> Option<String> {
-    let total = time_to_minutes(time) + delta;
-    if total >= 1440 {
-        return None; // past midnight
+pub(crate) struct AddMinutesResult {
+    pub date: String,
+    pub time: String,
+}
+
+pub(crate) fn add_minutes(date: &str, time: &str, delta: u32) -> AddMinutesResult {
+    let nd = parse_date(date).expect("Invalid date");
+    let (hour, minute) = parse_hhmm(time).expect("Invalid time");
+    let start_minutes = hour * 60 + minute + delta;
+    let day_offset = start_minutes / 1440;
+    let within_day = start_minutes % 1440;
+    let result_date = nd + chrono::Duration::days(day_offset as i64);
+    AddMinutesResult {
+        date: format_date(result_date),
+        time: minutes_to_time(within_day),
     }
-    Some(minutes_to_time(total))
 }
 
 pub(crate) fn format_date(date: NaiveDate) -> String {
@@ -108,7 +118,23 @@ mod tests {
 
     #[test]
     fn test_add_minutes() {
-        assert_eq!(add_minutes("09:00", 30).unwrap(), "09:30");
+        let result = add_minutes("2026-03-21", "09:00", 30);
+        assert_eq!(result.date, "2026-03-21");
+        assert_eq!(result.time, "09:30");
+    }
+
+    #[test]
+    fn test_add_minutes_cross_midnight() {
+        let result = add_minutes("2026-03-21", "23:00", 120);
+        assert_eq!(result.date, "2026-03-22");
+        assert_eq!(result.time, "01:00");
+    }
+
+    #[test]
+    fn test_add_minutes_midnight_boundary() {
+        let result = add_minutes("2026-03-21", "22:00", 120);
+        assert_eq!(result.date, "2026-03-22");
+        assert_eq!(result.time, "00:00");
     }
 
     #[test]

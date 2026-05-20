@@ -319,12 +319,22 @@ impl RangeEvaluator {
                         None => continue,
                     };
 
-                    let end_time = duration.and_then(|d| add_minutes(&resolved, d));
+                    let (end_time, end_date) = match duration {
+                        Some(d) => {
+                            let result = add_minutes(date, &resolved, *d);
+                            (
+                                Some(result.time),
+                                (result.date != date).then_some(result.date),
+                            )
+                        }
+                        None => (None, None),
+                    };
                     let dur = *duration;
 
                     slots.push(TimeSlot {
                         start_time: resolved,
                         end_time,
+                        end_date,
                         duration: dur,
                         range_id: range.id.clone(),
                         label: range.label.clone(),
@@ -358,11 +368,21 @@ impl RangeEvaluator {
 
                     while current_minutes < end_minutes {
                         let st = minutes_to_time(current_minutes);
-                        let et = duration.and_then(|d| add_minutes(&st, d));
+                        let (end_time, end_date) = match duration {
+                            Some(d) => {
+                                let result = add_minutes(date, &st, *d);
+                                (
+                                    Some(result.time),
+                                    (result.date != date).then_some(result.date),
+                                )
+                            }
+                            None => (None, None),
+                        };
 
                         slots.push(TimeSlot {
                             start_time: st,
-                            end_time: et,
+                            end_time,
+                            end_date,
                             duration: *duration,
                             range_id: range.id.clone(),
                             label: range.label.clone(),
@@ -384,15 +404,22 @@ impl RangeEvaluator {
                         (None, None) => None,
                     };
 
-                    let end_for_slot = match (&end, dur) {
-                        (Some(et), _) => Some(et.clone()),
-                        (None, Some(d)) => add_minutes(&resolved_start, d),
-                        (None, None) => None,
+                    let (end_for_slot, end_date) = match (&end, dur) {
+                        (Some(et), _) => (Some(et.clone()), None),
+                        (None, Some(d)) => {
+                            let result = add_minutes(date, &resolved_start, d);
+                            (
+                                Some(result.time),
+                                (result.date != date).then_some(result.date),
+                            )
+                        }
+                        (None, None) => (None, None),
                     };
 
                     slots.push(TimeSlot {
                         start_time: resolved_start,
                         end_time: end_for_slot,
+                        end_date,
                         duration: dur,
                         range_id: range.id.clone(),
                         label: range.label.clone(),
@@ -422,6 +449,7 @@ impl RangeEvaluator {
                         date: day.clone(),
                         start_time: Some(slot.start_time),
                         end_time: slot.end_time,
+                        end_date: slot.end_date,
                         range_id: range.id.clone(),
                         label: range.label.clone(),
                         all_day: false,
@@ -433,6 +461,7 @@ impl RangeEvaluator {
                     date: day,
                     start_time: None,
                     end_time: None,
+                    end_date: None,
                     range_id: range.id.clone(),
                     label: range.label.clone(),
                     all_day: true,
@@ -842,7 +871,13 @@ impl RangeEvaluator {
             for slot in time_slots {
                 let start_minutes = time_to_minutes(&slot.start_time);
                 let end_minutes = match &slot.end_time {
-                    Some(et) => time_to_minutes(et),
+                    Some(et) => {
+                        let base = time_to_minutes(et);
+                        match &slot.end_date {
+                            Some(ed) if ed != date => base + 1440,
+                            _ => base,
+                        }
+                    }
                     None => start_minutes + slot.duration.unwrap_or(0),
                 };
 
