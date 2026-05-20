@@ -619,7 +619,10 @@ impl RangeEvaluator {
         let mut results: Vec<SpanInfo> = Vec::new();
         for i in 0..n {
             let span = &all_spans[i];
-            debug_assert!(component_of[i].is_some(), "BFS should assign every span a component");
+            debug_assert!(
+                component_of[i].is_some(),
+                "BFS should assign every span a component"
+            );
             results.push(SpanInfo {
                 range_id: span.range_id.clone(),
                 label: span.label.clone(),
