@@ -1,10 +1,24 @@
-name: CI
+name: CI (JS)
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'packages/**'
+      - 'examples/**'
+      - 'conformance/**'
+      - 'package.json'
+      - 'yarn.lock'
+      - '.github/workflows/ci-js.yml'
   pull_request:
     branches: [main]
+    paths:
+      - 'packages/**'
+      - 'examples/**'
+      - 'conformance/**'
+      - 'package.json'
+      - 'yarn.lock'
+      - '.github/workflows/ci-js.yml'
 
 jobs:
   lint:
