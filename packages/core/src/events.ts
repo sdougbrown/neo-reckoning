@@ -9,7 +9,8 @@ export function fromDateRange(range: DateRange, occurrence: Occurrence): Calenda
 
   let end: Date | null = null;
   if (occurrence.endTime) {
-    end = buildDate(occurrence.date, occurrence.endTime, range.timezone);
+    const endDate = occurrence.endDate ?? occurrence.date;
+    end = buildDate(endDate, occurrence.endTime, range.timezone);
   }
 
   return {

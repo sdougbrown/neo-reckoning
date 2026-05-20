@@ -871,6 +871,10 @@ impl RangeEvaluator {
             for slot in time_slots {
                 let start_minutes = time_to_minutes(&slot.start_time);
                 let end_minutes = match &slot.end_time {
+                    // Adds 1440 per day for cross-midnight slots. Multi-day spans
+                    // (>24h duration) would need the actual day difference, but
+                    // cal-rules policies currently constrain durations to fit
+                    // within a single day.
                     Some(et) => {
                         let base = time_to_minutes(et);
                         match &slot.end_date {
