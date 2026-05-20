@@ -319,12 +319,22 @@ impl RangeEvaluator {
                         None => continue,
                     };
 
-                    let end_time = duration.and_then(|d| add_minutes(&resolved, d));
+                    let (end_time, end_date) = match duration {
+                        Some(d) => {
+                            let result = add_minutes(date, &resolved, *d);
+                            (
+                                Some(result.time),
+                                (result.date != date).then_some(result.date),
+                            )
+                        }
+                        None => (None, None),
+                    };
                     let dur = *duration;
 
                     slots.push(TimeSlot {
                         start_time: resolved,
                         end_time,
+                        end_date,
                         duration: dur,
                         range_id: range.id.clone(),
                         label: range.label.clone(),
@@ -358,11 +368,21 @@ impl RangeEvaluator {
 
                     while current_minutes < end_minutes {
                         let st = minutes_to_time(current_minutes);
-                        let et = duration.and_then(|d| add_minutes(&st, d));
+                        let (end_time, end_date) = match duration {
+                            Some(d) => {
+                                let result = add_minutes(date, &st, *d);
+                                (
+                                    Some(result.time),
+                                    (result.date != date).then_some(result.date),
+                                )
+                            }
+                            None => (None, None),
+                        };
 
                         slots.push(TimeSlot {
                             start_time: st,
-                            end_time: et,
+                            end_time,
+                            end_date,
                             duration: *duration,
                             range_id: range.id.clone(),
                             label: range.label.clone(),
@@ -384,15 +404,22 @@ impl RangeEvaluator {
                         (None, None) => None,
                     };
 
-                    let end_for_slot = match (&end, dur) {
-                        (Some(et), _) => Some(et.clone()),
-                        (None, Some(d)) => add_minutes(&resolved_start, d),
-                        (None, None) => None,
+                    let (end_for_slot, end_date) = match (&end, dur) {
+                        (Some(et), _) => (Some(et.clone()), None),
+                        (None, Some(d)) => {
+                            let result = add_minutes(date, &resolved_start, d);
+                            (
+                                Some(result.time),
+                                (result.date != date).then_some(result.date),
+                            )
+                        }
+                        (None, None) => (None, None),
                     };
 
                     slots.push(TimeSlot {
                         start_time: resolved_start,
                         end_time: end_for_slot,
+                        end_date,
                         duration: dur,
                         range_id: range.id.clone(),
                         label: range.label.clone(),
@@ -422,6 +449,7 @@ impl RangeEvaluator {
                         date: day.clone(),
                         start_time: Some(slot.start_time),
                         end_time: slot.end_time,
+                        end_date: slot.end_date,
                         range_id: range.id.clone(),
                         label: range.label.clone(),
                         all_day: false,
@@ -433,6 +461,7 @@ impl RangeEvaluator {
                     date: day,
                     start_time: None,
                     end_time: None,
+                    end_date: None,
                     range_id: range.id.clone(),
                     label: range.label.clone(),
                     all_day: true,
@@ -842,7 +871,17 @@ impl RangeEvaluator {
             for slot in time_slots {
                 let start_minutes = time_to_minutes(&slot.start_time);
                 let end_minutes = match &slot.end_time {
-                    Some(et) => time_to_minutes(et),
+                    // Adds 1440 per day for cross-midnight slots. Multi-day spans
+                    // (>24h duration) would need the actual day difference, but
+                    // cal-rules policies currently constrain durations to fit
+                    // within a single day.
+                    Some(et) => {
+                        let base = time_to_minutes(et);
+                        match &slot.end_date {
+                            Some(ed) if ed != date => base + 1440,
+                            _ => base,
+                        }
+                    }
                     None => start_minutes + slot.duration.unwrap_or(0),
                 };
 
@@ -1460,6 +1499,31 @@ mod tests {
     }
 
     #[test]
+    fn test_time_slots_cross_midnight_end_date() {
+        let ev = evaluator();
+        let range = make_range(
+            "night",
+            "Night Shift",
+            DaySelector::Explicit {
+                dates: vec![day("2026-03-21")],
+                except_dates: None,
+                except_between: None,
+            },
+            Some(TimeSelector::Window {
+                start_time: "22:00".to_string(),
+                end_time: None,
+                repeat_every: None,
+                duration: Some(150),
+            }),
+        );
+        let slots = ev.get_time_slots("2026-03-21", &range);
+        assert_eq!(slots.len(), 1);
+        assert_eq!(slots[0].start_time, "22:00");
+        assert_eq!(slots[0].end_time, Some("00:30".to_string()));
+        assert_eq!(slots[0].end_date, Some("2026-03-22".to_string()));
+    }
+
+    #[test]
     fn test_time_slots_no_time_selector() {
         let ev = evaluator();
         let range = make_range(
@@ -1594,6 +1658,31 @@ mod tests {
         assert_eq!(entries.len(), 1);
         assert_eq!(entries[0].start_minutes, 540); // 09:00
         assert_eq!(entries[0].end_minutes, 600); // 10:00
+    }
+
+    #[test]
+    fn test_timed_entries_cross_midnight() {
+        let ev = evaluator();
+        let range = make_range(
+            "late",
+            "Late Night",
+            DaySelector::Explicit {
+                dates: vec![day("2026-03-21")],
+                except_dates: None,
+                except_between: None,
+            },
+            Some(TimeSelector::Window {
+                start_time: "23:00".to_string(),
+                end_time: None,
+                repeat_every: None,
+                duration: Some(120),
+            }),
+        );
+        let entries = ev.get_timed_entries_for_day(&[range], "2026-03-21");
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].start_minutes, 1380); // 23:00
+        assert_eq!(entries[0].end_minutes, 1500); // 01:00 next day
+        assert_eq!(entries[0].slot.end_date, Some("2026-03-22".to_string()));
     }
 
     #[test]

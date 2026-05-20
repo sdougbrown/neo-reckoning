@@ -343,6 +343,23 @@ describe('RangeEvaluator.findFreeSlots', () => {
       },
     ]);
   });
+
+  it('marks pre-midnight time as occupied for cross-midnight ranges', () => {
+    const range = makeRange({
+      dates: ['2026-03-21'],
+      startTime: '23:00',
+      duration: 120,
+    });
+    const slots = evaluator.findFreeSlots([range], '2026-03-21', {
+      dayStart: '00:00',
+      dayEnd: '24:00',
+      minDuration: 15,
+    });
+    const lateFree = slots.find((s) => s.startTime >= '23:00' && s.startTime < '24:00');
+    expect(lateFree).toBeUndefined();
+    expect(slots.length).toBeGreaterThanOrEqual(1);
+    expect(slots[0].startTime.localeCompare('23:00')).toBeLessThan(0);
+  });
 });
 
 describe('RangeEvaluator.findNextFreeSlot', () => {

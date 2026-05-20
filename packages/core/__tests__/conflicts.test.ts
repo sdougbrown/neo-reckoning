@@ -169,6 +169,25 @@ describe('findConflicts', () => {
     const conflicts = evaluator.findConflicts([rangeA, rangeB], '2026-03-23');
     expect(conflicts).toHaveLength(0);
   });
+
+  it('detects conflict between a cross-midnight range and an overlapping same-day range', () => {
+    const lateRange = makeRange({
+      id: 'late',
+      dates: ['2026-03-21'],
+      startTime: '23:00',
+      duration: 120,
+    });
+    const earlyRange = makeRange({
+      id: 'early',
+      dates: ['2026-03-21'],
+      startTime: '22:30',
+      duration: 60,
+    });
+    const conflicts = evaluator.findConflicts([lateRange, earlyRange], '2026-03-21');
+    expect(conflicts).toHaveLength(1);
+    expect(conflicts[0].overlapStart).toBe('23:00');
+    expect(conflicts[0].overlapEnd).toBe('23:30');
+  });
 });
 
 describe('findConflictsInWindow', () => {

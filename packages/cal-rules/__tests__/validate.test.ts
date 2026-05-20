@@ -304,6 +304,62 @@ describe('@daywatch/cal-rules', () => {
     ).toBe(true);
   });
 
+  test('flags duration exceeding midnight as foul', () => {
+    const result = validateRangeCreate({
+      id: 'r1',
+      label: 'Late slot',
+      startTime: '23:00',
+      duration: 120,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(
+      result.issues.some(
+        (issue) =>
+          issue.field === 'duration' &&
+          issue.code === 'foul' &&
+          issue.message === 'duration would exceed midnight (startTime + duration > 24:00)',
+      ),
+    ).toBe(true);
+    expect(result.candidate.duration).toBe(120);
+  });
+
+  test('accepts duration that fits within the day', () => {
+    const result = validateRangeCreate({
+      id: 'r1',
+      label: 'Fine slot',
+      startTime: '10:00',
+      duration: 120,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.issues).toEqual([]);
+  });
+
+  test('accepts duration exactly at midnight boundary', () => {
+    const result = validateRangeCreate({
+      id: 'r1',
+      label: 'Boundary slot',
+      startTime: '22:00',
+      duration: 120,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.issues).toEqual([]);
+  });
+
+  test('does not flag duration overflow when startTime is absent', () => {
+    const result = validateRangeCreate({
+      id: 'r1',
+      label: 'Hourly duration',
+      everyHour: [9, 13],
+      duration: 30,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.issues).toEqual([]);
+  });
+
   test('flags duration without everyHour or startTime', () => {
     const result = validateRangeCreate({
       id: 'r1',

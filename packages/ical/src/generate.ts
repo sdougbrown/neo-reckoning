@@ -25,10 +25,6 @@ function formatDate(date: Date): string {
   return formatDateParts(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
 }
 
-function formatTime(date: Date): string {
-  return `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
-}
-
 function addDays(date: string, offset: number): string {
   const { year, month, day } = parseDate(date);
   const next = new Date(Date.UTC(year, month - 1, day));
@@ -36,16 +32,20 @@ function addDays(date: string, offset: number): string {
   return formatDate(next);
 }
 
-function addMinutes(date: string, time: string, minutes: number): { date: string; time: string } {
+function formatTime(date: Date): string {
+  return `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
+}
+
+function addMinutesUTC(
+  date: string,
+  time: string,
+  minutes: number,
+): { date: string; time: string } {
   const { year, month, day } = parseDate(date);
   const [hour, minute] = time.split(':').map(Number);
   const next = new Date(Date.UTC(year, month - 1, day, hour, minute));
   next.setUTCMinutes(next.getUTCMinutes() + minutes);
-
-  return {
-    date: formatDate(next),
-    time: formatTime(next),
-  };
+  return { date: formatDate(next), time: formatTime(next) };
 }
 
 function hasRecurrence(range: DateRange): boolean {
@@ -134,7 +134,7 @@ function addEventEnd(
     }
 
     if (range.duration) {
-      const end = addMinutes(anchorDate, range.startTime, range.duration);
+      const end = addMinutesUTC(anchorDate, range.startTime, range.duration);
       component.addProperty(createDateProperty('dtend', end.date, end.time, range.timezone));
     }
     return;
@@ -149,7 +149,7 @@ function addEventEnd(
     }
 
     if (range.duration) {
-      const end = addMinutes(range.toDate, range.startTime, range.duration);
+      const end = addMinutesUTC(range.toDate, range.startTime, range.duration);
       component.addProperty(createDateProperty('dtend', end.date, end.time, range.timezone));
     }
   }

@@ -57,4 +57,6 @@ export {
   getToday,
   convertTime,
   buildDate,
+  addMinutes,
 } from './time.js';
+export type { AddMinutesResult } from './time.js';

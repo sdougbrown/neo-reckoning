@@ -44,17 +44,32 @@ describe('time utilities', () => {
   });
 
   describe('addMinutes', () => {
-    it('adds minutes to a time', () => {
-      expect(addMinutes('06:00', 120)).toBe('08:00');
-      expect(addMinutes('09:30', 45)).toBe('10:15');
+    it('adds minutes to a time on the same day', () => {
+      expect(addMinutes('2026-03-21', '06:00', 120)).toEqual({ date: '2026-03-21', time: '08:00' });
+      expect(addMinutes('2026-03-21', '09:30', 45)).toEqual({ date: '2026-03-21', time: '10:15' });
     });
 
-    it('returns null when result crosses midnight', () => {
-      expect(addMinutes('23:00', 120)).toBeNull();
+    it('returns next day when result crosses midnight', () => {
+      expect(addMinutes('2026-03-21', '23:00', 120)).toEqual({ date: '2026-03-22', time: '01:00' });
     });
 
-    it('returns null at exactly midnight', () => {
-      expect(addMinutes('23:00', 60)).toBeNull();
+    it('returns next day at exactly midnight', () => {
+      expect(addMinutes('2026-03-21', '23:00', 60)).toEqual({ date: '2026-03-22', time: '00:00' });
+    });
+
+    it('handles crossing exactly one midnight', () => {
+      expect(addMinutes('2026-03-21', '22:00', 150)).toEqual({ date: '2026-03-22', time: '00:30' });
+    });
+
+    it('handles crossing two midnights (48+ hour duration)', () => {
+      expect(addMinutes('2026-03-21', '12:00', 2880)).toEqual({
+        date: '2026-03-23',
+        time: '12:00',
+      });
+    });
+
+    it('handles midnight boundary (22:00 + 120 = 00:00 next day)', () => {
+      expect(addMinutes('2026-03-21', '22:00', 120)).toEqual({ date: '2026-03-22', time: '00:00' });
     });
   });
 

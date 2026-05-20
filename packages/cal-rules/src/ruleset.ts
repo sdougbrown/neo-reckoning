@@ -45,6 +45,11 @@ function isPlainObject(value: unknown): boolean {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function timeToMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + m;
+}
+
 export const RANGE_KEYS = [
   'id',
   'label',
@@ -145,6 +150,33 @@ export const rangeInputUmp = umpire({
         return toDate >= values.fromDate;
       },
       { reason: 'toDate must be on or after fromDate' },
+    ),
+    /**
+     * The core engine fully supports cross-midnight durations via endDate on
+     * TimeSlot/Occurrence. This rule is intentionally stricter: cal-rules
+     * validates ingress policy for DateRange inputs, and ranges that exceed
+     * midnight are flagged as foul rather than silently producing multi-day
+     * slots. Consumers that need cross-midnight ranges should bypass this
+     * rule or handle the foul downstream.
+     */
+    fairWhen(
+      'duration',
+      (duration, values) => {
+        if (
+          typeof duration !== 'number' ||
+          !Number.isInteger(duration) ||
+          duration <= 0 ||
+          typeof values.startTime !== 'string' ||
+          !TIME_RE.test(values.startTime)
+        ) {
+          return true;
+        }
+
+        return timeToMinutes(values.startTime) + duration <= 1440;
+      },
+      {
+        reason: 'duration would exceed midnight (startTime + duration > 24:00)',
+      },
     ),
   ],
   validators: {
