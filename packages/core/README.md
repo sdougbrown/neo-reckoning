@@ -99,7 +99,8 @@ The fundamental data model. Defines a set of dates and/or times using explicit v
 - `everyWeekday` — days of week (0=Sun, 6=Sat)
 - `everyDate` — days of month (1-31)
 - `everyMonth` — months (1-12)
-- `fromDate` / `toDate` / `fixedBetween` — date bounds
+- `fromDate` / `toDate` — date bounds
+- `fixedBetween` — match every day inside the bounds, bypassing recurrence filters
 
 **Sub-day** (two mutually exclusive approaches):
 - `everyHour` — explicit hours list, e.g. `[6, 14, 22]`

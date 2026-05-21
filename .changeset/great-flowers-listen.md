@@ -1,5 +1,6 @@
 ---
 "@daywatch/cal": patch
+"@daywatch/ical": patch
 "@daywatch/mcp": patch
 ---
 

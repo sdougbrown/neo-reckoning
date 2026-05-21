@@ -50,7 +50,6 @@ describe('generateICS', () => {
         title: 'Recurring class',
         fromDate: '2026-03-02',
         toDate: '2026-04-17',
-        fixedBetween: true,
         everyWeekday: [1, 3, 5],
         exceptDates: ['2026-03-16', '2026-03-20'],
         startTime: '09:00',
@@ -63,14 +62,57 @@ describe('generateICS', () => {
         label: 'Paydays',
         fromDate: '2026-01-01',
         toDate: '2026-03-15',
-        fixedBetween: true,
         everyDate: [1, 15],
+      },
+      {
+        id: 'fixed-timed',
+        label: 'Daily Office Hours',
+        fromDate: '2026-03-10',
+        toDate: '2026-03-12',
+        fixedBetween: true,
+        everyWeekday: [1],
+        startTime: '09:00',
+        endTime: '10:00',
+      },
+      {
+        id: 'fixed-timed-plain',
+        label: 'Daily Standup',
+        fromDate: '2026-03-10',
+        toDate: '2026-03-12',
+        fixedBetween: true,
+        startTime: '11:00',
+        endTime: '11:30',
+      },
+      {
+        id: 'fixed-timed-open',
+        label: 'Open Daily Hold',
+        fromDate: '2026-03-10',
+        fixedBetween: true,
+        startTime: '13:00',
+        endTime: '13:30',
+      },
+      {
+        id: 'fixed-span',
+        label: 'Spring Break',
+        fromDate: '2026-03-10',
+        toDate: '2026-03-12',
+        fixedBetween: true,
+        everyWeekday: [1],
+      },
+      {
+        id: 'fixed-span-excluded',
+        label: 'Reading Week',
+        fromDate: '2026-03-10',
+        toDate: '2026-03-14',
+        fixedBetween: true,
+        exceptDates: ['2026-03-12'],
+        exceptBetween: [['2026-03-13', '2026-03-14']],
       },
     ];
 
     const calendar = new ICAL.Component(ICAL.parse(generateICS(ranges)));
 
-    expect(calendar.getAllSubcomponents('vevent')).toHaveLength(4);
+    expect(calendar.getAllSubcomponents('vevent')).toHaveLength(9);
 
     const holiday = byUid(calendar, 'holiday');
     expect(holiday.getFirstProperty('dtstart')?.toICALString()).toBe('DTSTART;VALUE=DATE:20260321');
@@ -102,6 +144,42 @@ describe('generateICS', () => {
     expect(paydays.getFirstProperty('dtstart')?.toICALString()).toBe('DTSTART;VALUE=DATE:20260101');
     expect(paydays.getFirstProperty('rrule')?.toICALString()).toBe(
       'RRULE:FREQ=MONTHLY;BYMONTHDAY=1,15;UNTIL=20260315',
+    );
+
+    const fixedTimed = byUid(calendar, 'fixed-timed');
+    expect(fixedTimed.getFirstProperty('rrule')?.toICALString()).toBe(
+      'RRULE:FREQ=DAILY;UNTIL=20260312T090000',
+    );
+    expect(fixedTimed.getFirstProperty('dtend')?.toICALString()).toBe('DTEND:20260310T100000');
+
+    const fixedTimedPlain = byUid(calendar, 'fixed-timed-plain');
+    expect(fixedTimedPlain.getFirstProperty('rrule')?.toICALString()).toBe(
+      'RRULE:FREQ=DAILY;UNTIL=20260312T110000',
+    );
+    expect(fixedTimedPlain.getFirstProperty('dtend')?.toICALString()).toBe(
+      'DTEND:20260310T113000',
+    );
+
+    const fixedTimedOpen = byUid(calendar, 'fixed-timed-open');
+    expect(fixedTimedOpen.getFirstProperty('rrule')?.toICALString()).toBe('RRULE:FREQ=DAILY');
+    expect(fixedTimedOpen.getFirstProperty('dtend')?.toICALString()).toBe(
+      'DTEND:20260310T133000',
+    );
+
+    const fixedSpan = byUid(calendar, 'fixed-span');
+    expect(fixedSpan.getFirstProperty('dtstart')?.toICALString()).toBe(
+      'DTSTART;VALUE=DATE:20260310',
+    );
+    expect(fixedSpan.getFirstProperty('dtend')?.toICALString()).toBe('DTEND;VALUE=DATE:20260313');
+    expect(fixedSpan.getFirstProperty('rrule')).toBeNull();
+
+    const fixedSpanExcluded = byUid(calendar, 'fixed-span-excluded');
+    expect(fixedSpanExcluded.getFirstProperty('rrule')?.toICALString()).toBe(
+      'RRULE:FREQ=DAILY;UNTIL=20260314',
+    );
+    expect(fixedSpanExcluded.getFirstProperty('dtend')).toBeNull();
+    expect(fixedSpanExcluded.getFirstProperty('exdate')?.toICALString()).toBe(
+      'EXDATE;VALUE=DATE:20260312,20260313,20260314',
     );
   });
 });

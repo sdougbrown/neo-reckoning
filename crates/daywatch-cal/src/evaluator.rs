@@ -1424,6 +1424,65 @@ mod tests {
     }
 
     #[test]
+    fn test_fixed_between_overrides_explicit_dates_from_plain_json() {
+        let ev = evaluator();
+        let range: DateRange = serde_json::from_str(
+            r#"{
+                "id": "1",
+                "label": "test",
+                "dates": ["2026-03-10"],
+                "fromDate": "2026-03-10",
+                "toDate": "2026-03-14",
+                "fixedBetween": true
+            }"#,
+        )
+        .unwrap();
+
+        assert!(ev.is_date_in_range("2026-03-10", &range));
+        assert!(ev.is_date_in_range("2026-03-11", &range));
+
+        let from = NaiveDate::from_ymd_opt(2026, 3, 10).unwrap();
+        let to = NaiveDate::from_ymd_opt(2026, 3, 14).unwrap();
+        let occurrences = ev.expand(&range, from, to);
+        let dates: Vec<&str> = occurrences.iter().map(|o| o.date.as_str()).collect();
+        assert_eq!(
+            dates,
+            vec![
+                "2026-03-10",
+                "2026-03-11",
+                "2026-03-12",
+                "2026-03-13",
+                "2026-03-14",
+            ]
+        );
+    }
+
+    #[test]
+    fn test_fixed_between_overrides_date_and_month_recurrence_variant() {
+        let ev = evaluator();
+        let range = make_range(
+            "1",
+            "test",
+            DaySelector::Recurrence {
+                every_weekday: None,
+                every_date: Some(vec![15]),
+                every_month: Some(vec![4]),
+                from_date: Some(day("2026-03-10")),
+                to_date: Some(day("2026-03-14")),
+                fixed_between: true,
+                except_dates: None,
+                except_between: None,
+            },
+            None,
+        );
+
+        assert!(ev.is_date_in_range("2026-03-10", &range));
+        assert!(ev.is_date_in_range("2026-03-11", &range));
+        assert!(ev.is_date_in_range("2026-03-14", &range));
+        assert!(!ev.is_date_in_range("2026-03-15", &range));
+    }
+
+    #[test]
     fn test_fixed_between_expand_all_days() {
         let ev = evaluator();
         let range = make_range(
@@ -1441,7 +1500,17 @@ mod tests {
         let from = NaiveDate::from_ymd_opt(2026, 3, 10).unwrap();
         let to = NaiveDate::from_ymd_opt(2026, 3, 14).unwrap();
         let occurrences = ev.expand(&range, from, to);
-        assert_eq!(occurrences.len(), 5);
+        let dates: Vec<&str> = occurrences.iter().map(|o| o.date.as_str()).collect();
+        assert_eq!(
+            dates,
+            vec![
+                "2026-03-10",
+                "2026-03-11",
+                "2026-03-12",
+                "2026-03-13",
+                "2026-03-14",
+            ]
+        );
     }
 
     #[test]

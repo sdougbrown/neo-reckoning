@@ -125,7 +125,6 @@ describe('parseICS', () => {
       title: 'Recurring class',
       fromDate: '2026-03-02',
       toDate: '2026-04-17',
-      fixedBetween: true,
       everyWeekday: [1, 3, 5],
       exceptDates: ['2026-03-16', '2026-03-20'],
       startTime: '09:00',
@@ -147,7 +146,6 @@ describe('parseICS', () => {
       title: 'Monthly payroll cadence',
       fromDate: '2026-01-01',
       toDate: '2026-03-15',
-      fixedBetween: true,
       everyDate: [1, 15],
       exceptDates: ['2026-03-15'],
     });
@@ -170,7 +168,6 @@ describe('parseICS', () => {
         title: 'Five day sprint',
         fromDate: '2026-03-10',
         toDate: '2026-03-14',
-        fixedBetween: true,
         everyWeekday: [0, 1, 2, 3, 4, 5, 6],
       },
       {

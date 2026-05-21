@@ -92,6 +92,24 @@ describe('RangeEvaluator', () => {
       expect(utcEvaluator.isDateInRange('2026-03-21', range)).toBe(false);
     });
 
+    it('fixedBetween true with no bounds matches all queried days', () => {
+      const range = makeRange({ fixedBetween: true });
+
+      expect(utcEvaluator.isDateInRange('2026-03-09', range)).toBe(true);
+      expect(utcEvaluator.isDateInRange('2026-03-15', range)).toBe(true);
+
+      const occurrences = utcEvaluator.expand(
+        range,
+        new Date(2026, 2, 10),
+        new Date(2026, 2, 12),
+      );
+      expect(occurrences.map((o) => o.date)).toEqual([
+        '2026-03-10',
+        '2026-03-11',
+        '2026-03-12',
+      ]);
+    });
+
     it('fixedBetween true overrides recurrence patterns', () => {
       const range = makeRange({
         fixedBetween: true,
@@ -111,6 +129,21 @@ describe('RangeEvaluator', () => {
       expect(utcEvaluator.isDateInRange('2026-03-15', range)).toBe(false);
     });
 
+    it('fixedBetween true overrides date and month recurrence patterns', () => {
+      const range = makeRange({
+        fixedBetween: true,
+        fromDate: '2026-03-10',
+        toDate: '2026-03-14',
+        everyDate: [15],
+        everyMonth: [4],
+      });
+
+      expect(utcEvaluator.isDateInRange('2026-03-10', range)).toBe(true);
+      expect(utcEvaluator.isDateInRange('2026-03-11', range)).toBe(true);
+      expect(utcEvaluator.isDateInRange('2026-03-14', range)).toBe(true);
+      expect(utcEvaluator.isDateInRange('2026-03-15', range)).toBe(false);
+    });
+
     it('fixedBetween true overrides explicit dates consistently', () => {
       const range = makeRange({
         dates: ['2026-03-10'],
@@ -119,9 +152,14 @@ describe('RangeEvaluator', () => {
         toDate: '2026-03-14',
       });
 
+      expect(utcEvaluator.isDateInRange('2026-03-10', range)).toBe(true);
       expect(utcEvaluator.isDateInRange('2026-03-11', range)).toBe(true);
 
-      const occurrences = utcEvaluator.expand(range, new Date(2026, 2, 10), new Date(2026, 2, 14));
+      const occurrences = utcEvaluator.expand(
+        range,
+        new Date(2026, 2, 10),
+        new Date(2026, 2, 14),
+      );
       expect(occurrences.map((o) => o.date)).toEqual([
         '2026-03-10',
         '2026-03-11',
@@ -141,7 +179,37 @@ describe('RangeEvaluator', () => {
       const from = new Date(2026, 2, 10); // March 10, 2026
       const to = new Date(2026, 2, 14); // March 14, 2026
       const occurrences = utcEvaluator.expand(range, from, to);
-      expect(occurrences).toHaveLength(5); // all 5 days
+      expect(occurrences.map((o) => o.date)).toEqual([
+        '2026-03-10',
+        '2026-03-11',
+        '2026-03-12',
+        '2026-03-13',
+        '2026-03-14',
+      ]);
+    });
+
+    it('fixedBetween true with time fields expands timed occurrences for every day', () => {
+      const range = makeRange({
+        fixedBetween: true,
+        fromDate: '2026-03-10',
+        toDate: '2026-03-12',
+        everyWeekday: [1], // ignored
+        startTime: '09:00',
+        endTime: '10:30',
+      });
+
+      const occurrences = utcEvaluator.expand(
+        range,
+        new Date(2026, 2, 10),
+        new Date(2026, 2, 12),
+      );
+      expect(occurrences.map((o) => [o.date, o.startTime, o.endTime, o.allDay])).toEqual(
+        [
+          ['2026-03-10', '09:00', '10:30', false],
+          ['2026-03-11', '09:00', '10:30', false],
+          ['2026-03-12', '09:00', '10:30', false],
+        ],
+      );
     });
 
     it('fixedBetween true still respects exceptDates', () => {
