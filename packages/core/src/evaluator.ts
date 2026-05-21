@@ -68,14 +68,14 @@ export class RangeEvaluator {
       return false;
     }
 
-    // Explicit dates list
-    if (compiled.datesSet) {
-      return compiled.datesSet.has(dateStr);
-    }
-
     // fixedBetween — match every day in the fromDate/toDate window
     if (compiled.fixedBetween) {
       return true;
+    }
+
+    // Explicit dates list
+    if (compiled.datesSet) {
+      return compiled.datesSet.has(dateStr);
     }
 
     // Recurrence patterns — if any are set, ALL set patterns must match (AND)

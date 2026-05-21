@@ -111,6 +111,26 @@ describe('RangeEvaluator', () => {
       expect(utcEvaluator.isDateInRange('2026-03-15', range)).toBe(false);
     });
 
+    it('fixedBetween true overrides explicit dates consistently', () => {
+      const range = makeRange({
+        dates: ['2026-03-10'],
+        fixedBetween: true,
+        fromDate: '2026-03-10',
+        toDate: '2026-03-14',
+      });
+
+      expect(utcEvaluator.isDateInRange('2026-03-11', range)).toBe(true);
+
+      const occurrences = utcEvaluator.expand(range, new Date(2026, 2, 10), new Date(2026, 2, 14));
+      expect(occurrences.map((o) => o.date)).toEqual([
+        '2026-03-10',
+        '2026-03-11',
+        '2026-03-12',
+        '2026-03-13',
+        '2026-03-14',
+      ]);
+    });
+
     it('fixedBetween true with expand returns every day in window', () => {
       const range = makeRange({
         fixedBetween: true,

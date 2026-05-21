@@ -21,6 +21,8 @@ pub enum DaySelector {
         from_date: Option<String>,
         #[serde(rename = "toDate", skip_serializing_if = "Option::is_none")]
         to_date: Option<String>,
+        #[serde(rename = "fixedBetween", default)]
+        fixed_between: bool,
         #[serde(rename = "exceptDates", skip_serializing_if = "Option::is_none")]
         except_dates: Option<Vec<String>>,
         #[serde(rename = "exceptBetween", skip_serializing_if = "Option::is_none")]
@@ -182,12 +184,19 @@ impl<'de> Deserialize<'de> for DateRange {
                 .and_then(non_null)
                 .map(|v| serde_json::from_value(v).map_err(Error::custom))
                 .transpose()?;
+            let fixed_between: bool = map
+                .get("fixedBetween")
+                .and_then(non_null)
+                .map(|v| serde_json::from_value(v).map_err(Error::custom))
+                .transpose()?
+                .unwrap_or(false);
             DaySelector::Recurrence {
                 every_weekday,
                 every_date,
                 every_month,
                 from_date,
                 to_date,
+                fixed_between,
                 except_dates,
                 except_between,
             }
@@ -427,6 +436,7 @@ mod tests {
                 every_month: None,
                 from_date: Some("2026-01-01".to_string()),
                 to_date: Some("2026-12-31".to_string()),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
@@ -553,6 +563,7 @@ mod tests {
                 every_month: None,
                 from_date: Some("2026-01-01".to_string()),
                 to_date: Some("2026-12-31".to_string()),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
@@ -651,12 +662,31 @@ mod tests {
             every_weekday,
             from_date,
             to_date,
+            fixed_between,
             ..
         } = &dr.day_selector
         {
             assert_eq!(every_weekday, &Some(vec![1, 3, 5]));
             assert_eq!(from_date, &Some("2026-01-01".to_string()));
             assert_eq!(to_date, &Some("2026-12-31".to_string()));
+            assert!(!*fixed_between);
+        }
+    }
+
+    #[test]
+    fn deser_plain_json_recurrence_keeps_fixed_between() {
+        let json = r#"{
+            "id": "2b",
+            "label": "Fixed Recurrence",
+            "everyWeekday": [1],
+            "fromDate": "2026-03-10",
+            "toDate": "2026-03-14",
+            "fixedBetween": true
+        }"#;
+        let dr: DateRange = serde_json::from_str(json).unwrap();
+        assert!(matches!(dr.day_selector, DaySelector::Recurrence { .. }));
+        if let DaySelector::Recurrence { fixed_between, .. } = &dr.day_selector {
+            assert!(*fixed_between);
         }
     }
 

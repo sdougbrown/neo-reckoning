@@ -81,6 +81,7 @@ fn compile_range(range: &DateRange) -> CompiledRange {
             every_month,
             from_date: _,
             to_date: _,
+            fixed_between,
             except_dates,
             except_between,
         } => {
@@ -121,7 +122,7 @@ fn compile_range(range: &DateRange) -> CompiledRange {
                 except_between: except_between.clone(),
                 has_recurrence,
                 has_time_fields: has_time_fields_inner(range),
-                fixed_between: false,
+                fixed_between: *fixed_between,
             }
         }
         DaySelector::Range {
@@ -1279,6 +1280,7 @@ mod tests {
                 every_month: None,
                 from_date: Some(day("2026-03-01")),
                 to_date: Some(day("2026-03-31")),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
@@ -1301,6 +1303,7 @@ mod tests {
                 every_month: Some(vec![3]),
                 from_date: Some(day("2026-01-01")),
                 to_date: Some(day("2026-12-31")),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
@@ -1381,6 +1384,43 @@ mod tests {
         // Out of window
         assert!(!ev.is_date_in_range("2026-03-09", &range));
         assert!(!ev.is_date_in_range("2026-03-15", &range));
+    }
+
+    #[test]
+    fn test_fixed_between_overrides_recurrence_variant() {
+        let ev = evaluator();
+        let range = make_range(
+            "1",
+            "test",
+            DaySelector::Recurrence {
+                every_weekday: Some(vec![1]),
+                every_date: None,
+                every_month: None,
+                from_date: Some(day("2026-03-10")),
+                to_date: Some(day("2026-03-14")),
+                fixed_between: true,
+                except_dates: None,
+                except_between: None,
+            },
+            None,
+        );
+
+        assert!(ev.is_date_in_range("2026-03-11", &range));
+
+        let from = NaiveDate::from_ymd_opt(2026, 3, 10).unwrap();
+        let to = NaiveDate::from_ymd_opt(2026, 3, 14).unwrap();
+        let occurrences = ev.expand(&range, from, to);
+        let dates: Vec<&str> = occurrences.iter().map(|o| o.date.as_str()).collect();
+        assert_eq!(
+            dates,
+            vec![
+                "2026-03-10",
+                "2026-03-11",
+                "2026-03-12",
+                "2026-03-13",
+                "2026-03-14",
+            ]
+        );
     }
 
     #[test]
@@ -1473,6 +1513,7 @@ mod tests {
                 every_month: None,
                 from_date: Some(day("2026-03-01")),
                 to_date: Some(day("2026-03-07")),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
@@ -2020,6 +2061,7 @@ mod tests {
                 every_month: None,
                 from_date: Some(day("2026-03-01")),
                 to_date: Some(day("2026-03-31")),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
@@ -2039,6 +2081,7 @@ mod tests {
                 every_month: None,
                 from_date: Some(day("2026-03-01")),
                 to_date: Some(day("2026-03-31")),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
@@ -2275,6 +2318,7 @@ mod tests {
                 every_month: None,
                 from_date: Some(day("2026-03-02")),
                 to_date: Some(day("2026-03-13")),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
@@ -2302,6 +2346,7 @@ mod tests {
                 every_month: None,
                 from_date: Some(day("2026-03-02")),
                 to_date: Some(day("2026-03-13")),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
@@ -2316,6 +2361,7 @@ mod tests {
                 every_month: None,
                 from_date: Some(day("2026-03-02")),
                 to_date: Some(day("2026-03-06")),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
@@ -2349,6 +2395,7 @@ mod tests {
                 every_month: None,
                 from_date: Some(day("2026-03-02")),
                 to_date: Some(day("2026-03-06")),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
@@ -2363,6 +2410,7 @@ mod tests {
                 every_month: None,
                 from_date: Some(day("2026-03-02")),
                 to_date: Some(day("2026-03-06")),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
@@ -2377,6 +2425,7 @@ mod tests {
                 every_month: None,
                 from_date: Some(day("2026-03-02")),
                 to_date: Some(day("2026-03-04")),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
