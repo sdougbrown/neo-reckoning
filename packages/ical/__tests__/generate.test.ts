@@ -156,15 +156,11 @@ describe('generateICS', () => {
     expect(fixedTimedPlain.getFirstProperty('rrule')?.toICALString()).toBe(
       'RRULE:FREQ=DAILY;UNTIL=20260312T110000',
     );
-    expect(fixedTimedPlain.getFirstProperty('dtend')?.toICALString()).toBe(
-      'DTEND:20260310T113000',
-    );
+    expect(fixedTimedPlain.getFirstProperty('dtend')?.toICALString()).toBe('DTEND:20260310T113000');
 
     const fixedTimedOpen = byUid(calendar, 'fixed-timed-open');
     expect(fixedTimedOpen.getFirstProperty('rrule')?.toICALString()).toBe('RRULE:FREQ=DAILY');
-    expect(fixedTimedOpen.getFirstProperty('dtend')?.toICALString()).toBe(
-      'DTEND:20260310T133000',
-    );
+    expect(fixedTimedOpen.getFirstProperty('dtend')?.toICALString()).toBe('DTEND:20260310T133000');
 
     const fixedSpan = byUid(calendar, 'fixed-span');
     expect(fixedSpan.getFirstProperty('dtstart')?.toICALString()).toBe(

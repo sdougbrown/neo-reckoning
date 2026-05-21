@@ -98,16 +98,8 @@ describe('RangeEvaluator', () => {
       expect(utcEvaluator.isDateInRange('2026-03-09', range)).toBe(true);
       expect(utcEvaluator.isDateInRange('2026-03-15', range)).toBe(true);
 
-      const occurrences = utcEvaluator.expand(
-        range,
-        new Date(2026, 2, 10),
-        new Date(2026, 2, 12),
-      );
-      expect(occurrences.map((o) => o.date)).toEqual([
-        '2026-03-10',
-        '2026-03-11',
-        '2026-03-12',
-      ]);
+      const occurrences = utcEvaluator.expand(range, new Date(2026, 2, 10), new Date(2026, 2, 12));
+      expect(occurrences.map((o) => o.date)).toEqual(['2026-03-10', '2026-03-11', '2026-03-12']);
     });
 
     it('fixedBetween true overrides recurrence patterns', () => {
@@ -155,11 +147,7 @@ describe('RangeEvaluator', () => {
       expect(utcEvaluator.isDateInRange('2026-03-10', range)).toBe(true);
       expect(utcEvaluator.isDateInRange('2026-03-11', range)).toBe(true);
 
-      const occurrences = utcEvaluator.expand(
-        range,
-        new Date(2026, 2, 10),
-        new Date(2026, 2, 14),
-      );
+      const occurrences = utcEvaluator.expand(range, new Date(2026, 2, 10), new Date(2026, 2, 14));
       expect(occurrences.map((o) => o.date)).toEqual([
         '2026-03-10',
         '2026-03-11',
@@ -198,18 +186,12 @@ describe('RangeEvaluator', () => {
         endTime: '10:30',
       });
 
-      const occurrences = utcEvaluator.expand(
-        range,
-        new Date(2026, 2, 10),
-        new Date(2026, 2, 12),
-      );
-      expect(occurrences.map((o) => [o.date, o.startTime, o.endTime, o.allDay])).toEqual(
-        [
-          ['2026-03-10', '09:00', '10:30', false],
-          ['2026-03-11', '09:00', '10:30', false],
-          ['2026-03-12', '09:00', '10:30', false],
-        ],
-      );
+      const occurrences = utcEvaluator.expand(range, new Date(2026, 2, 10), new Date(2026, 2, 12));
+      expect(occurrences.map((o) => [o.date, o.startTime, o.endTime, o.allDay])).toEqual([
+        ['2026-03-10', '09:00', '10:30', false],
+        ['2026-03-11', '09:00', '10:30', false],
+        ['2026-03-12', '09:00', '10:30', false],
+      ]);
     });
 
     it('fixedBetween true still respects exceptDates', () => {

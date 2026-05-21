@@ -65,10 +65,7 @@ function getCountEndDate(rule: Recur, dtstart: Time): string {
   return formatTimeAsDate(current);
 }
 
-function getWindowFields(
-  rule: Recur,
-  dtstart: Time,
-): Pick<DateRange, 'fromDate' | 'toDate'> {
+function getWindowFields(rule: Recur, dtstart: Time): Pick<DateRange, 'fromDate' | 'toDate'> {
   if (!rule.until && !rule.count) {
     return {
       fromDate: formatTimeAsDate(dtstart),
