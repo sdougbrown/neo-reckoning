@@ -45,7 +45,6 @@ const testRanges: DateRange[] = [
     duration: 60,
     fromDate: '2026-03-01',
     toDate: '2026-06-30',
-    fixedBetween: true,
   },
 ];
 

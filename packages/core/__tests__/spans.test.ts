@@ -162,7 +162,6 @@ describe('computeSpans', () => {
       everyWeekday: [1, 3, 5], // Mon, Wed, Fri
       fromDate: '2026-03-23',
       toDate: '2026-03-27',
-      fixedBetween: true,
     });
 
     const spans = evaluator.computeSpans([range], new Date(2026, 2, 23), new Date(2026, 2, 27));
