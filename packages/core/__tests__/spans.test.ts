@@ -309,4 +309,28 @@ describe('computeSpans', () => {
       length: 3,
     });
   });
+
+  it('fixedBetween range produces a single span of consecutive days', () => {
+    const range = makeRange({
+      id: 'fixed-span',
+      label: 'Spring Break',
+      fromDate: '2026-03-10',
+      toDate: '2026-03-14',
+      fixedBetween: true,
+    });
+
+    const spans = evaluator.computeSpans([range], new Date(2026, 2, 10), new Date(2026, 2, 14));
+
+    expect(spans).toHaveLength(1);
+    expect(spans[0]).toMatchObject({
+      rangeId: 'fixed-span',
+      label: 'Spring Break',
+      startDate: '2026-03-10',
+      endDate: '2026-03-14',
+      length: 5,
+      lane: 0,
+      maxOverlap: 1,
+      totalLanes: 1,
+    });
+  });
 });

@@ -147,6 +147,7 @@ describe('generateICS', () => {
     );
 
     const fixedTimed = byUid(calendar, 'fixed-timed');
+    expect(fixedTimed.getFirstProperty('dtstart')?.toICALString()).toBe('DTSTART:20260310T090000');
     expect(fixedTimed.getFirstProperty('rrule')?.toICALString()).toBe(
       'RRULE:FREQ=DAILY;UNTIL=20260312T090000',
     );
