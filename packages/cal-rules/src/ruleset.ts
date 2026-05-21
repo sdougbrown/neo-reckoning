@@ -151,6 +151,55 @@ export const rangeInputUmp = umpire({
       },
       { reason: 'toDate must be on or after fromDate' },
     ),
+    fairWhen(
+      'fixedBetween',
+      (fixedBetween, values) => {
+        if (fixedBetween !== true) {
+          return true;
+        }
+
+        return (
+          typeof values.fromDate === 'string' &&
+          isValidDateString(values.fromDate) &&
+          typeof values.toDate === 'string' &&
+          isValidDateString(values.toDate)
+        );
+      },
+      { reason: 'fixedBetween requires both fromDate and toDate' },
+    ),
+    fairWhen(
+      'everyWeekday',
+      (everyWeekday, values) => {
+        if (values.fixedBetween !== true || isEmptyArrayLike(everyWeekday)) {
+          return true;
+        }
+
+        return false;
+      },
+      { reason: 'everyWeekday is ignored when fixedBetween is true' },
+    ),
+    fairWhen(
+      'everyDate',
+      (everyDate, values) => {
+        if (values.fixedBetween !== true || isEmptyArrayLike(everyDate)) {
+          return true;
+        }
+
+        return false;
+      },
+      { reason: 'everyDate is ignored when fixedBetween is true' },
+    ),
+    fairWhen(
+      'everyMonth',
+      (everyMonth, values) => {
+        if (values.fixedBetween !== true || isEmptyArrayLike(everyMonth)) {
+          return true;
+        }
+
+        return false;
+      },
+      { reason: 'everyMonth is ignored when fixedBetween is true' },
+    ),
     /**
      * The core engine fully supports cross-midnight durations via endDate on
      * TimeSlot/Occurrence. This rule is intentionally stricter: cal-rules
