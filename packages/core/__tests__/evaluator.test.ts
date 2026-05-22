@@ -239,7 +239,10 @@ describe('RangeEvaluator', () => {
         fixedBetween: true,
         fromDate: '2026-03-10',
         toDate: '2026-03-15',
-        exceptBetween: [['2026-03-11', '2026-03-12'], ['2026-03-14', '2026-03-14']],
+        exceptBetween: [
+          ['2026-03-11', '2026-03-12'],
+          ['2026-03-14', '2026-03-14'],
+        ],
       });
       expect(utcEvaluator.isDateInRange('2026-03-10', range)).toBe(true);
       expect(utcEvaluator.isDateInRange('2026-03-11', range)).toBe(false);
