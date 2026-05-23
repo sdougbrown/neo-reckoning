@@ -160,7 +160,9 @@ describe('generateICS', () => {
     expect(fixedTimedPlain.getFirstProperty('dtend')?.toICALString()).toBe('DTEND:20260310T113000');
 
     const fixedTimedOpen = byUid(calendar, 'fixed-timed-open');
-    expect(fixedTimedOpen.getFirstProperty('dtstart')?.toICALString()).toBe('DTSTART:20260310T130000');
+    expect(fixedTimedOpen.getFirstProperty('dtstart')?.toICALString()).toBe(
+      'DTSTART:20260310T130000',
+    );
     expect(fixedTimedOpen.getFirstProperty('rrule')?.toICALString()).toBe('RRULE:FREQ=DAILY');
     expect(fixedTimedOpen.getFirstProperty('dtend')?.toICALString()).toBe('DTEND:20260310T133000');
 
