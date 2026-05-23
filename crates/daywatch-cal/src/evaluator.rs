@@ -1406,6 +1406,8 @@ mod tests {
         );
 
         assert!(ev.is_date_in_range("2026-03-11", &range));
+        assert!(!ev.is_date_in_range("2026-03-09", &range));
+        assert!(!ev.is_date_in_range("2026-03-15", &range));
 
         let from = NaiveDate::from_ymd_opt(2026, 3, 10).unwrap();
         let to = NaiveDate::from_ymd_opt(2026, 3, 14).unwrap();
@@ -1480,6 +1482,21 @@ mod tests {
         assert!(ev.is_date_in_range("2026-03-11", &range));
         assert!(ev.is_date_in_range("2026-03-14", &range));
         assert!(!ev.is_date_in_range("2026-03-15", &range));
+
+        let from = NaiveDate::from_ymd_opt(2026, 3, 10).unwrap();
+        let to = NaiveDate::from_ymd_opt(2026, 3, 14).unwrap();
+        let occurrences = ev.expand(&range, from, to);
+        let dates: Vec<&str> = occurrences.iter().map(|o| o.date.as_str()).collect();
+        assert_eq!(
+            dates,
+            vec![
+                "2026-03-10",
+                "2026-03-11",
+                "2026-03-12",
+                "2026-03-13",
+                "2026-03-14",
+            ]
+        );
     }
 
     #[test]
