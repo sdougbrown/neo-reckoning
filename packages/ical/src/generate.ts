@@ -32,6 +32,14 @@ function addDays(date: string, offset: number): string {
   return formatDate(next);
 }
 
+function dateRange(from: string, to: string): string[] {
+  const dates: string[] = [];
+  for (let current = from; current <= to; current = addDays(current, 1)) {
+    dates.push(current);
+  }
+  return dates;
+}
+
 function formatTime(date: Date): string {
   return `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
 }
@@ -50,6 +58,14 @@ function addMinutesUTC(
 
 function hasRecurrence(range: DateRange): boolean {
   return Boolean(range.everyWeekday?.length || range.everyDate?.length || range.everyMonth?.length);
+}
+
+function shouldExportRRule(range: DateRange): boolean {
+  if (range.fixedBetween) {
+    return Boolean(range.startTime || range.exceptDates?.length || range.exceptBetween?.length);
+  }
+
+  return hasRecurrence(range);
 }
 
 function getAnchorDate(range: DateRange): string | null {
@@ -119,15 +135,16 @@ function addEventEnd(
   component: InstanceType<typeof ICAL.Component>,
   range: DateRange,
   anchorDate: string,
+  recurrence: boolean,
 ): void {
   if (!range.startTime) {
-    if (!hasRecurrence(range) && range.fromDate && range.toDate) {
+    if (!recurrence && range.fromDate && range.toDate) {
       component.addProperty(createDateProperty('dtend', addDays(range.toDate, 1), null));
     }
     return;
   }
 
-  if (hasRecurrence(range) || (range.dates?.length === 1 && !range.fromDate && !range.toDate)) {
+  if (recurrence || (range.dates?.length === 1 && !range.fromDate && !range.toDate)) {
     if (range.endTime) {
       component.addProperty(createDateProperty('dtend', anchorDate, range.endTime, range.timezone));
       return;
@@ -156,19 +173,25 @@ function addEventEnd(
 }
 
 function addExceptDates(component: InstanceType<typeof ICAL.Component>, range: DateRange): void {
-  if (!range.exceptDates?.length) {
+  const excludedDates = new Set(range.exceptDates ?? []);
+  for (const [from, to] of range.exceptBetween ?? []) {
+    for (const date of dateRange(from, to)) {
+      excludedDates.add(date);
+    }
+  }
+
+  if (excludedDates.size === 0) {
     return;
   }
 
+  const dates = [...excludedDates].sort();
   const property = new ICAL.Property('exdate');
   if (!range.startTime) {
     property.resetType('date');
-    property.setValues(range.exceptDates.map((date) => createTime(date, null)));
+    property.setValues(dates.map((date) => createTime(date, null)));
   } else {
     const startTime = range.startTime;
-    property.setValues(
-      range.exceptDates.map((date) => createTime(date, startTime, range.timezone)),
-    );
+    property.setValues(dates.map((date) => createTime(date, startTime, range.timezone)));
     if (range.timezone && range.timezone !== 'UTC') {
       property.setParameter('tzid', range.timezone);
     }
@@ -178,7 +201,7 @@ function addExceptDates(component: InstanceType<typeof ICAL.Component>, range: D
 }
 
 function buildEvent(range: DateRange): InstanceType<typeof ICAL.Component> | null {
-  const recurrence = hasRecurrence(range);
+  const recurrence = shouldExportRRule(range);
   const anchorDate = getAnchorDate(range);
   if (!anchorDate) {
     console.warn(`Skipping DateRange ${range.id}: export requires a single anchor date`);
@@ -211,7 +234,7 @@ function buildEvent(range: DateRange): InstanceType<typeof ICAL.Component> | nul
   component.addProperty(
     createDateProperty('dtstart', anchorDate, range.startTime ?? null, range.timezone),
   );
-  addEventEnd(component, range, anchorDate);
+  addEventEnd(component, range, anchorDate, recurrence);
 
   if (recurrence) {
     const rule = buildRRuleFromDateRange(range);

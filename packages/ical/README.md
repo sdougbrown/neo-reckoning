@@ -77,7 +77,7 @@ Tier 2 is used for patterns like ordinal weekdays (`BYDAY=2TU`), non-daily `INTE
 | `FREQ=WEEKLY;BYDAY=...` | `everyWeekday` | If `BYDAY` is omitted, the DTSTART weekday is used |
 | `FREQ=MONTHLY;BYMONTHDAY=...` | `everyDate` | If `BYMONTHDAY` is omitted, the DTSTART day-of-month is used |
 | `FREQ=YEARLY;BYMONTH=...` | `everyMonth` | If `BYMONTH` is omitted, the DTSTART month is used |
-| `UNTIL` or `COUNT` | `fromDate`, `toDate`, `fixedBetween` | Bounds the recurrence window |
+| `UNTIL` or `COUNT` | `fromDate`, `toDate` | Bounds the recurrence window |
 | `EXDATE` | `exceptDates` | Applied to both mapped and expanded recurrences |
 
 Patterns outside those mappings fall back to Tier 2 expansion inside the requested parse window.

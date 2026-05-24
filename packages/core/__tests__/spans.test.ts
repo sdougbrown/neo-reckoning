@@ -162,7 +162,6 @@ describe('computeSpans', () => {
       everyWeekday: [1, 3, 5], // Mon, Wed, Fri
       fromDate: '2026-03-23',
       toDate: '2026-03-27',
-      fixedBetween: true,
     });
 
     const spans = evaluator.computeSpans([range], new Date(2026, 2, 23), new Date(2026, 2, 27));
@@ -308,6 +307,124 @@ describe('computeSpans', () => {
       startDate: '2026-03-25',
       endDate: '2026-03-27',
       length: 3,
+    });
+  });
+
+  it('fixedBetween range produces a single span of consecutive days', () => {
+    const range = makeRange({
+      id: 'fixed-span',
+      label: 'Spring Break',
+      fromDate: '2026-03-10',
+      toDate: '2026-03-14',
+      fixedBetween: true,
+    });
+
+    const spans = evaluator.computeSpans([range], new Date(2026, 2, 10), new Date(2026, 2, 14));
+
+    expect(spans).toHaveLength(1);
+    expect(spans[0]).toMatchObject({
+      rangeId: 'fixed-span',
+      label: 'Spring Break',
+      startDate: '2026-03-10',
+      endDate: '2026-03-14',
+      length: 5,
+      lane: 0,
+      maxOverlap: 1,
+      totalLanes: 1,
+    });
+  });
+
+  it('mix of fixedBetween range and normal recurrence range produces correct lane assignment', () => {
+    const fixedRange = makeRange({
+      id: 'fixed',
+      label: 'Fixed Range',
+      fromDate: '2026-03-23',
+      toDate: '2026-03-27',
+      fixedBetween: true,
+    });
+    const normalRange = makeRange({
+      id: 'normal',
+      label: 'Recurring',
+      fromDate: '2026-03-25',
+      toDate: '2026-03-29',
+    });
+
+    const spans = evaluator.computeSpans(
+      [fixedRange, normalRange],
+      new Date(2026, 2, 23),
+      new Date(2026, 2, 29),
+    );
+
+    expect(spans).toHaveLength(2);
+
+    const fixedSpan = spans.find((s) => s.rangeId === 'fixed')!;
+    const normalSpan = spans.find((s) => s.rangeId === 'normal')!;
+
+    // They overlap on Mar 25-27, so different lanes
+    expect(fixedSpan.lane).not.toBe(normalSpan.lane);
+
+    expect(fixedSpan).toMatchObject({
+      rangeId: 'fixed',
+      startDate: '2026-03-23',
+      endDate: '2026-03-27',
+      length: 5,
+      maxOverlap: 2,
+      totalLanes: 2,
+    });
+
+    expect(normalSpan).toMatchObject({
+      rangeId: 'normal',
+      startDate: '2026-03-25',
+      endDate: '2026-03-29',
+      length: 5,
+      maxOverlap: 2,
+      totalLanes: 2,
+    });
+  });
+
+  it('two overlapping fixedBetween ranges get different lanes with correct overlap counts', () => {
+    const rangeA = makeRange({
+      id: 'fixed-a',
+      label: 'Break A',
+      fromDate: '2026-04-01',
+      toDate: '2026-04-05',
+      fixedBetween: true,
+    });
+    const rangeB = makeRange({
+      id: 'fixed-b',
+      label: 'Break B',
+      fromDate: '2026-04-03',
+      toDate: '2026-04-07',
+      fixedBetween: true,
+    });
+
+    const spans = evaluator.computeSpans(
+      [rangeA, rangeB],
+      new Date(2026, 3, 1),
+      new Date(2026, 3, 7),
+    );
+
+    expect(spans).toHaveLength(2);
+
+    const spanA = spans.find((s) => s.rangeId === 'fixed-a')!;
+    const spanB = spans.find((s) => s.rangeId === 'fixed-b')!;
+
+    expect(spanA.lane).not.toBe(spanB.lane);
+
+    expect(spanA).toMatchObject({
+      startDate: '2026-04-01',
+      endDate: '2026-04-05',
+      length: 5,
+      maxOverlap: 2,
+      totalLanes: 2,
+    });
+
+    expect(spanB).toMatchObject({
+      startDate: '2026-04-03',
+      endDate: '2026-04-07',
+      length: 5,
+      maxOverlap: 2,
+      totalLanes: 2,
     });
   });
 });

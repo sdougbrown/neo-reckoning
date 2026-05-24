@@ -39,6 +39,12 @@ describe('parse/generate roundtrip', () => {
       ...parseICS(loadFixture('recurring-weekly.ics'), window),
       ...parseICS(loadFixture('recurring-monthly.ics'), window),
       ...parseICS(loadFixture('google-export.ics'), window),
+      {
+        id: 'fixed-roundtrip',
+        label: 'Fixed Roundtrip',
+        fromDate: '2026-03-10',
+        toDate: '2026-03-12',
+      },
     ];
 
     const roundTripped = parseICS(generateICS(sourceRanges, { calendarName: 'Roundtrip' }), window);

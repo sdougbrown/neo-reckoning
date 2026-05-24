@@ -21,6 +21,8 @@ pub enum DaySelector {
         from_date: Option<String>,
         #[serde(rename = "toDate", skip_serializing_if = "Option::is_none")]
         to_date: Option<String>,
+        #[serde(rename = "fixedBetween", default)]
+        fixed_between: bool,
         #[serde(rename = "exceptDates", skip_serializing_if = "Option::is_none")]
         except_dates: Option<Vec<String>>,
         #[serde(rename = "exceptBetween", skip_serializing_if = "Option::is_none")]
@@ -122,8 +124,44 @@ impl<'de> Deserialize<'de> for DateRange {
             .and_then(non_null)
             .map(|v| serde_json::from_value(v).map_err(Error::custom))
             .transpose()?;
+        let fixed_between: bool = map
+            .get("fixedBetween")
+            .and_then(non_null)
+            .map(|v| serde_json::from_value(v).map_err(Error::custom))
+            .transpose()?
+            .unwrap_or(false);
 
-        let day_selector = if map.contains_key("dates") {
+        // Plain JSON is flat like the TS DateRange shape. Preserve the
+        // evaluator's selector precedence when mapping it into Rust variants.
+        let day_selector = if fixed_between {
+            let from_date: Option<String> = map
+                .get("fromDate")
+                .and_then(non_null)
+                .map(|v| serde_json::from_value(v).map_err(Error::custom))
+                .transpose()?;
+            let to_date: Option<String> = map
+                .get("toDate")
+                .and_then(non_null)
+                .map(|v| serde_json::from_value(v).map_err(Error::custom))
+                .transpose()?;
+            let except_dates: Option<Vec<String>> = map
+                .get("exceptDates")
+                .and_then(non_null)
+                .map(|v| serde_json::from_value(v).map_err(Error::custom))
+                .transpose()?;
+            let except_between: Option<Vec<(String, String)>> = map
+                .get("exceptBetween")
+                .and_then(non_null)
+                .map(|v| serde_json::from_value(v).map_err(Error::custom))
+                .transpose()?;
+            DaySelector::Range {
+                from_date,
+                to_date,
+                fixed_between,
+                except_dates,
+                except_between,
+            }
+        } else if map.contains_key("dates") {
             let dates: Vec<String> = map
                 .get("dates")
                 .ok_or_else(|| Error::missing_field("dates"))
@@ -188,6 +226,7 @@ impl<'de> Deserialize<'de> for DateRange {
                 every_month,
                 from_date,
                 to_date,
+                fixed_between,
                 except_dates,
                 except_between,
             }
@@ -202,12 +241,6 @@ impl<'de> Deserialize<'de> for DateRange {
                 .and_then(non_null)
                 .map(|v| serde_json::from_value(v).map_err(Error::custom))
                 .transpose()?;
-            let fixed_between: bool = map
-                .get("fixedBetween")
-                .and_then(non_null)
-                .map(|v| serde_json::from_value(v).map_err(Error::custom))
-                .transpose()?
-                .unwrap_or(false);
             let except_dates: Option<Vec<String>> = map
                 .get("exceptDates")
                 .and_then(non_null)
@@ -427,6 +460,7 @@ mod tests {
                 every_month: None,
                 from_date: Some("2026-01-01".to_string()),
                 to_date: Some("2026-12-31".to_string()),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
@@ -553,6 +587,7 @@ mod tests {
                 every_month: None,
                 from_date: Some("2026-01-01".to_string()),
                 to_date: Some("2026-12-31".to_string()),
+                fixed_between: false,
                 except_dates: None,
                 except_between: None,
             },
@@ -651,12 +686,56 @@ mod tests {
             every_weekday,
             from_date,
             to_date,
+            fixed_between,
             ..
         } = &dr.day_selector
         {
             assert_eq!(every_weekday, &Some(vec![1, 3, 5]));
             assert_eq!(from_date, &Some("2026-01-01".to_string()));
             assert_eq!(to_date, &Some("2026-12-31".to_string()));
+            assert!(!*fixed_between);
+        }
+    }
+
+    #[test]
+    fn deser_plain_json_fixed_between_takes_precedence_over_recurrence() {
+        let json = r#"{
+            "id": "2b",
+            "label": "Fixed Recurrence",
+            "everyWeekday": [1],
+            "fromDate": "2026-03-10",
+            "toDate": "2026-03-14",
+            "fixedBetween": true
+        }"#;
+        let dr: DateRange = serde_json::from_str(json).unwrap();
+        assert!(matches!(dr.day_selector, DaySelector::Range { .. }));
+        if let DaySelector::Range { fixed_between, .. } = &dr.day_selector {
+            assert!(*fixed_between);
+        }
+    }
+
+    #[test]
+    fn deser_plain_json_fixed_between_takes_precedence_over_explicit_dates() {
+        let json = r#"{
+            "id": "2c",
+            "label": "Fixed Explicit",
+            "dates": ["2026-03-10"],
+            "fromDate": "2026-03-10",
+            "toDate": "2026-03-14",
+            "fixedBetween": true
+        }"#;
+        let dr: DateRange = serde_json::from_str(json).unwrap();
+        assert!(matches!(dr.day_selector, DaySelector::Range { .. }));
+        if let DaySelector::Range {
+            from_date,
+            to_date,
+            fixed_between,
+            ..
+        } = &dr.day_selector
+        {
+            assert_eq!(from_date, &Some("2026-03-10".to_string()));
+            assert_eq!(to_date, &Some("2026-03-14".to_string()));
+            assert!(*fixed_between);
         }
     }
 

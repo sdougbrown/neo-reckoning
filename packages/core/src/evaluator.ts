@@ -24,6 +24,7 @@ interface CompiledRange {
   monthLookup?: Uint8Array;
   hasRecurrence: boolean;
   hasTimeFields: boolean;
+  fixedBetween: boolean;
 }
 
 function buildLookup(size: number, values: readonly number[]): Uint8Array {
@@ -65,6 +66,11 @@ export class RangeEvaluator {
 
     if (this.isDateExcluded(dateStr, compiled)) {
       return false;
+    }
+
+    // fixedBetween — match every day in the fromDate/toDate window
+    if (compiled.fixedBetween) {
+      return true;
     }
 
     // Explicit dates list
@@ -777,6 +783,15 @@ export class RangeEvaluator {
       return []; // No overlap between range bounds and query window
     }
 
+    // fixedBetween — return every day within the effective window
+    if (compiled.fixedBetween) {
+      const allDays = dateRange(effectiveFrom, effectiveTo);
+      if (!compiled.exceptDatesSet && !compiled.exceptBetween) {
+        return allDays;
+      }
+      return allDays.filter((day) => !this.isDateExcluded(day, compiled));
+    }
+
     // Explicit dates — just filter to the window
     if (compiled.dates) {
       return compiled.dates.filter(
@@ -964,6 +979,7 @@ export class RangeEvaluator {
       ...(range.everyMonth ? { monthLookup: buildLookup(13, range.everyMonth) } : {}),
       hasRecurrence: !!(range.everyWeekday || range.everyDate || range.everyMonth),
       hasTimeFields: !!(range.everyHour || range.startTime),
+      fixedBetween: !!range.fixedBetween,
     };
 
     this.compiledRanges.set(range, compiled);

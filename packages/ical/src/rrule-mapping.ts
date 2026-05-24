@@ -9,7 +9,7 @@ type Time = InstanceType<typeof ICAL.Time>;
 
 type DateRangeRuleFields = Pick<
   DateRange,
-  'fromDate' | 'toDate' | 'fixedBetween' | 'everyWeekday' | 'everyDate' | 'everyMonth'
+  'fromDate' | 'toDate' | 'everyWeekday' | 'everyDate' | 'everyMonth'
 >;
 
 export interface MapRRuleSuccess {
@@ -65,10 +65,7 @@ function getCountEndDate(rule: Recur, dtstart: Time): string {
   return formatTimeAsDate(current);
 }
 
-function getWindowFields(
-  rule: Recur,
-  dtstart: Time,
-): Pick<DateRange, 'fromDate' | 'toDate' | 'fixedBetween'> {
+function getWindowFields(rule: Recur, dtstart: Time): Pick<DateRange, 'fromDate' | 'toDate'> {
   if (!rule.until && !rule.count) {
     return {
       fromDate: formatTimeAsDate(dtstart),
@@ -78,7 +75,6 @@ function getWindowFields(
   return {
     fromDate: formatTimeAsDate(dtstart),
     toDate: rule.until ? formatTimeAsDate(rule.until) : getCountEndDate(rule, dtstart),
-    fixedBetween: true,
   };
 }
 
@@ -236,7 +232,11 @@ function getUntilTime(range: DateRange): Time {
 export function buildRRuleFromDateRange(range: DateRange): Recur | null {
   let data: Parameters<typeof ICAL.Recur.fromData>[0] | null = null;
 
-  if (range.everyDate?.length) {
+  if (range.fixedBetween) {
+    data = {
+      freq: 'DAILY',
+    };
+  } else if (range.everyDate?.length) {
     data = {
       freq: 'MONTHLY',
       bymonthday: [...range.everyDate].sort((a, b) => a - b),
@@ -257,7 +257,7 @@ export function buildRRuleFromDateRange(range: DateRange): Recur | null {
     return null;
   }
 
-  if (range.fixedBetween && range.toDate) {
+  if (range.toDate) {
     data.until = getUntilTime(range);
   }
 
